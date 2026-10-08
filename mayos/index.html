@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MayOS by La May — Hệ điều hành cho khách sạn boutique</title>
+<meta name="description" content="MayOS là bộ công nghệ vận hành khách sạn được xây và chạy thật mỗi ngày tại La May Hotel. Dành cho nhà đầu tư, chủ khách sạn và đơn vị vận hành lưu trú.">
+<link rel="canonical" href="https://by.lamayhotel.com/mayos/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://by.lamayhotel.com/mayos/">
+<meta property="og:title" content="MayOS by La May — Hệ điều hành cho khách sạn boutique">
+<meta property="og:description" content="Bộ công nghệ vận hành khách sạn được xây và chạy thật mỗi ngày tại La May Hotel.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0a0d12; --ink-2:#10151c; --ink-3:#171e28;
+  --line:rgba(243,234,217,.12); --line-2:rgba(243,234,217,.22);
+  --cream:#f3ead9; --mist:#a9b4c2; --dim:#6f7b8a;
+  --amber:#f0a45b; --amber-2:#ffd2a1; --live:#7fd6a4;
+  --serif:"Fraunces",Georgia,serif;
+  --sans:"Be Vietnam Pro",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+  --pad:clamp(20px,5vw,72px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:auto}
+body{background:var(--ink);color:var(--cream);font-family:var(--sans);font-weight:300;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--amber);color:var(--ink)}
+
+#gl{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E")}
+main,header,footer{position:relative;z-index:2}
+
+/* ---------- nav ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:18px var(--pad);transition:background .4s,backdrop-filter .4s,border-color .4s;border-bottom:1px solid transparent}
+.nav.scrolled{background:rgba(10,13,18,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:var(--line)}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand b{font-family:var(--serif);font-weight:500;font-size:24px;letter-spacing:-.02em}
+.brand b i{color:var(--amber);font-style:italic}
+.brand span{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+.nav nav{display:flex;gap:30px;font-size:14px;color:var(--mist)}
+.nav nav a:hover{color:var(--cream)}
+.btn{display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:0 24px;border-radius:999px;font-family:var(--sans);font-weight:500;font-size:15px;cursor:pointer;border:1px solid var(--line-2);background:transparent;color:var(--cream);transition:background .3s,color .3s,border-color .3s;will-change:transform}
+.btn:hover{border-color:var(--cream)}
+.btn.primary{background:var(--amber);border-color:var(--amber);color:var(--ink)}
+.btn.primary:hover{background:var(--amber-2);border-color:var(--amber-2)}
+.btn.small{min-height:40px;padding:0 18px;font-size:14px}
+.btn svg{width:16px;height:16px}
+.nav-r{display:flex;align-items:center;gap:12px}
+.lang{display:flex;border:1px solid var(--line-2);border-radius:999px;padding:3px}
+.lang button{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--mist);background:transparent;border:0;border-radius:999px;min-width:38px;min-height:34px;cursor:pointer;transition:.2s}
+.lang button[aria-pressed="true"]{background:var(--cream);color:var(--ink)}
+@media(max-width:860px){.nav nav{display:none}}
+@media(max-width:480px){.brand span{display:none}.nav-r{gap:8px}.btn.small{padding:0 14px;font-size:13px}}
+
+/* ---------- shared ---------- */
+section{padding:clamp(80px,12vw,160px) var(--pad)}
+.wrap{max-width:1240px;margin:0 auto}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.eyebrow::before{content:"";width:28px;height:1px;background:var(--amber)}
+h1,h2,h3{font-family:var(--serif);font-weight:400;letter-spacing:-.025em;line-height:1.08}
+h2{font-size:clamp(34px,5.2vw,68px);max-width:20ch}
+h2,h3,h4{text-wrap:balance}
+h2 em{white-space:nowrap}
+.lede,p{text-wrap:pretty}
+h2 em,h1 em{font-style:italic;color:var(--amber)}
+.lede{font-size:clamp(17px,1.5vw,20px);color:var(--mist);max-width:56ch;margin-top:24px}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.tag.live{color:var(--live);border:1px solid rgba(127,214,164,.35)}
+.tag.live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--live);box-shadow:0 0 0 0 rgba(127,214,164,.6);animation:pulse 2s infinite}
+.tag.soon{color:var(--dim);border:1px dashed var(--line-2)}
+@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(127,214,164,0)}100%{box-shadow:0 0 0 0 rgba(127,214,164,0)}}
+
+/* ---------- hero ---------- */
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding-top:140px;padding-bottom:48px}
+.hero h1{font-size:clamp(46px,8.6vw,132px)}
+.hero .line{white-space:nowrap}
+.line{display:block;overflow:hidden;padding-bottom:.08em}
+.line>span{display:block}
+.hero .lede{max-width:48ch}
+.hero-cta{display:flex;flex-wrap:wrap;gap:14px;margin-top:36px}
+.proof{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:clamp(48px,8vw,96px);border-top:1px solid var(--line)}
+.proof div{padding:22px 20px 0 0}
+.proof div+div{padding-left:20px;border-left:1px solid var(--line)}
+.proof b{display:block;font-family:var(--serif);font-weight:400;font-size:clamp(30px,3.6vw,48px);letter-spacing:-.02em;line-height:1}
+.proof div>span{display:block;margin-top:8px;font-size:13px;color:var(--mist)}
+@media(max-width:720px){.proof{grid-template-columns:1fr 1fr}.proof div{padding:18px 12px 18px 0}.proof div:nth-child(3){border-left:0;padding-left:0}.proof div:nth-child(n+3){border-top:1px solid var(--line)}}
+
+/* ---------- sandbox ---------- */
+.sandbox .wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,6vw,96px);align-items:end}
+.sandbox ul{list-style:none;display:grid;gap:0;border:1px solid var(--line);border-radius:22px;padding:4px 26px;background:rgba(10,13,18,.8);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.sandbox li:last-child{border-bottom:0}
+.sandbox li{padding:22px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:44px 1fr;gap:12px}
+.sandbox li i{font-family:var(--mono);font-style:normal;font-size:12px;color:var(--amber);padding-top:5px}
+.sandbox li b{font-weight:500;display:block}
+.sandbox li span{color:var(--mist);font-size:15px}
+@media(max-width:900px){.sandbox .wrap{grid-template-columns:1fr}}
+
+/* ---------- products ---------- */
+.products .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:64px}
+.card{background:linear-gradient(180deg,rgba(23,30,40,.92),rgba(16,21,28,.92));border:1px solid var(--line);border-radius:22px;padding:32px;position:relative;overflow:hidden;transform-style:preserve-3d;transition:border-color .3s}
+.card:hover{border-color:var(--line-2)}
+.card::after{content:"";position:absolute;inset:0;background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),rgba(240,164,91,.13),transparent 60%);opacity:0;transition:opacity .4s;pointer-events:none}
+.card:hover::after{opacity:1}
+.card .num{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.card h3{font-size:32px;margin:48px 0 6px}
+.card .role{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--amber)}
+.card p{color:var(--mist);margin:16px 0 22px;font-size:15.5px}
+.card ul{list-style:none;border-top:1px solid var(--line);padding-top:16px;display:grid;gap:9px;font-size:14.5px}
+.card li{display:flex;gap:10px}
+.card li::before{content:"→";color:var(--amber);flex:none}
+.card .top{display:flex;justify-content:space-between;align-items:center}
+@media(max-width:980px){.products .grid{grid-template-columns:1fr}}
+
+/* ---------- day (horizontal) ---------- */
+.day{padding-left:0;padding-right:0;overflow:hidden}
+.day .head{padding:0 var(--pad);max-width:calc(1240px + 2*var(--pad));margin:0 auto 56px}
+.day-track{display:flex;gap:18px;padding:0 var(--pad);width:max-content}
+.moment{width:min(78vw,400px);flex:none;background:rgba(16,21,28,.94);border:1px solid var(--line);border-radius:22px;padding:28px;display:flex;flex-direction:column;min-height:340px}
+.moment time{font-family:var(--serif);font-size:56px;letter-spacing:-.03em;line-height:1;color:var(--amber-2)}
+.moment .who{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-top:10px}
+.moment h3{font-size:24px;margin-top:auto;padding-top:36px}
+.moment p{color:var(--mist);font-size:15px;margin-top:10px}
+.day-bar{height:1px;background:var(--line);margin:40px var(--pad) 0;position:relative}
+.day-bar i{position:absolute;left:0;top:-1px;height:3px;width:100%;background:var(--amber);transform-origin:left;transform:scaleX(0)}
+@media(max-width:860px){.day-track{flex-direction:column;width:auto}.moment{width:auto;min-height:0}.day-bar{display:none}}
+
+/* ---------- modules ---------- */
+.mod-head{display:flex;justify-content:space-between;align-items:flex-end;gap:32px;flex-wrap:wrap}
+.legend{display:flex;gap:10px}
+.mods{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:22px;overflow:hidden;margin-top:56px}
+.mod{background:rgba(12,16,22,.95);padding:26px 24px 28px;min-height:190px;display:flex;flex-direction:column;gap:10px;transition:background .3s}
+.mod:hover{background:rgba(23,30,40,.98)}
+.mod .tag{align-self:flex-start}
+.mod h4{font-family:var(--sans);font-weight:500;font-size:17px;margin-top:auto;letter-spacing:-.01em}
+.mod p{font-size:14px;color:var(--mist);line-height:1.5}
+.mod.soon h4{color:var(--mist)}
+.mod.soon p{color:var(--dim)}
+@media(max-width:1080px){.mods{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.mods{grid-template-columns:1fr}.mod{min-height:0}}
+
+/* ---------- partners ---------- */
+.partners .rows{margin-top:64px;border-top:1px solid var(--line)}
+.prow{display:grid;grid-template-columns:.9fr 1.4fr auto;gap:32px;align-items:start;padding:36px 0;border-bottom:1px solid var(--line);transition:padding .4s}
+.prow h3{font-size:clamp(26px,3vw,40px)}
+.prow p{color:var(--mist)}
+.prow ul{list-style:none;margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
+.prow li{font-size:13px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;color:var(--cream);background:rgba(10,13,18,.6)}
+.prow .go{width:52px;height:52px;border-radius:50%;border:1px solid var(--line-2);display:grid;place-items:center;transition:background .3s,color .3s,transform .3s}
+.prow:hover .go{background:var(--amber);color:var(--ink);border-color:var(--amber);transform:rotate(-45deg)}
+@media(max-width:860px){.prow{grid-template-columns:1fr}.prow .go{display:none}}
+
+/* ---------- steps ---------- */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:64px;counter-reset:s}
+.step{counter-increment:s;border-top:1px solid var(--line-2);padding-top:20px}
+.step::before{content:"0" counter(s);font-family:var(--mono);font-size:12px;color:var(--amber)}
+.step h4{font-family:var(--serif);font-weight:400;font-size:24px;margin:14px 0 8px}
+.step p{font-size:15px;color:var(--mist)}
+@media(max-width:860px){.steps{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.steps{grid-template-columns:1fr}}
+
+/* ---------- contact ---------- */
+.contact .wrap{display:grid;grid-template-columns:1fr 1.05fr;gap:clamp(32px,6vw,88px);align-items:start}
+.contact h2{font-size:clamp(38px,5.6vw,76px)}
+form{background:rgba(16,21,28,.94);border:1px solid var(--line);border-radius:26px;padding:clamp(22px,3vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.f{display:flex;flex-direction:column;gap:8px}
+.f.full{grid-column:1/-1}
+label,legend{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mist)}
+input,textarea,select{font:inherit;font-size:16px;font-weight:400;color:var(--cream);background:var(--ink);border:1px solid var(--line-2);border-radius:12px;padding:13px 14px;min-height:48px;width:100%;transition:border-color .2s,box-shadow .2s}
+textarea{min-height:110px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:0;border-color:var(--amber);box-shadow:0 0 0 3px rgba(240,164,91,.18)}
+fieldset{border:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chips label{cursor:pointer;font-family:var(--sans);font-size:14px;letter-spacing:0;text-transform:none;color:var(--cream)}
+.chips input{position:absolute;opacity:0;width:0;height:0;min-height:0}
+.chips span{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1px solid var(--line-2);border-radius:999px;transition:.2s}
+.chips input:checked+span{background:var(--amber);border-color:var(--amber);color:var(--ink);font-weight:500}
+.chips input:focus-visible+span{box-shadow:0 0 0 3px rgba(240,164,91,.3)}
+form .btn{grid-column:1/-1;justify-content:center;min-height:54px;font-size:16px}
+.note{grid-column:1/-1;font-size:13px;color:var(--dim)}
+.done{grid-column:1/-1;text-align:center;padding:48px 8px;display:none}
+.done h3{font-size:34px;margin-bottom:10px}
+.done p{color:var(--mist)}
+form.sent>*:not(.done){display:none}
+form.sent .done{display:block}
+@media(max-width:900px){.contact .wrap{grid-template-columns:1fr}}
+@media(max-width:520px){form{grid-template-columns:1fr}}
+
+footer{padding:36px var(--pad);border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--dim);background:rgba(10,13,18,.8)}
+footer a:hover{color:var(--cream)}
+@media(prefers-reduced-motion:reduce){.tag.live::before{animation:none}}
+</style>
+</head>
+<body>
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="nav" id="nav">
+  <a class="brand" href="#top"><b>May<i>OS</i></b><span>by La May</span></a>
+  <nav>
+    <a href="#sandbox">Sandbox</a>
+    <a href="#products">Sản phẩm</a>
+    <a href="#modules">Module</a>
+    <a href="#partners">Hợp tác</a>
+  </nav>
+  <div class="nav-r">
+    <div class="lang" role="group" aria-label="Ngôn ngữ / Language"><button type="button" data-lang="vi">VI</button><button type="button" data-lang="en">EN</button></div>
+    <a class="btn small primary" href="#contact">Đề xuất hợp tác</a>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero">
+  <div class="wrap" style="width:100%">
+    <div class="eyebrow" data-hero>Hospitality Operating System</div>
+    <h1>
+      <span class="line"><span>Khách sạn</span></span>
+      <span class="line"><span>vận hành <em>nhẹ</em></span></span>
+      <span class="line"><span>như mây.</span></span>
+    </h1>
+    <p class="lede" data-hero>MayOS là bộ công nghệ vận hành lưu trú được xây từ bên trong một khách sạn thật — và chạy thật mỗi ngày tại La May Hotel. Từ lễ tân, buồng phòng, bảo trì đến trải nghiệm của khách: một hệ thống, một nguồn sự thật.</p>
+    <div class="hero-cta" data-hero>
+      <a class="btn primary magnetic" href="#contact"><span class="t">Đề xuất hợp tác</span>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+      <a class="btn magnetic" href="#products">Xem bộ giải pháp</a>
+    </div>
+    <div class="proof">
+      <div data-hero><b><span data-count="3">3</span></b><span>sản phẩm đang chạy production</span></div>
+      <div data-hero><b><span data-count="12">12</span></b><span>module vận hành đã sẵn sàng</span></div>
+      <div data-hero><b><span data-count="67">67</span>%</b><span>booking trực tiếp tại La May</span></div>
+      <div data-hero><b>24/7</b><span>dùng thật bởi đội ngũ khách sạn</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sandbox" id="sandbox">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow" data-reveal>Sandbox là một khách sạn thật</div>
+      <h2 data-reveal>Không phải bản demo. Là <em>ca trực sáng nay</em>.</h2>
+      <p class="lede" data-reveal>Mọi tính năng của MayOS đều bắt đầu từ một vấn đề có thật ở quầy lễ tân hay trên hành lang La May — và chỉ được giữ lại khi nhân viên thật sự dùng nó. Bạn không mua một lời hứa; bạn nhận một hệ thống đã trả giá cho từng bài học vận hành.</p>
+    </div>
+    <ul>
+      <li data-reveal><i>01</i><div><b>Thiết kế cho người đang bận</b><span>Khách đang đứng chờ ở quầy. Mọi thao tác chính phải xong trong vài giây, trên điện thoại, bằng một tay.</span></div></li>
+      <li data-reveal><i>02</i><div><b>Sai về tiền là không chấp nhận được</b><span>Folio, đặt cọc, thanh toán theo ca được đối soát tự động — không đếm trùng, không sót.</span></div></li>
+      <li data-reveal><i>03</i><div><b>Chủ khách sạn không cần có mặt</b><span>Bàn giao ca, sự cố, chất lượng phòng tự tổng kết và gửi về điện thoại của bạn.</span></div></li>
+    </ul>
+  </div>
+</section>
+
+<section class="products" id="products">
+  <div class="wrap">
+    <div class="eyebrow" data-reveal>Bộ giải pháp</div>
+    <h2 data-reveal>Ba sản phẩm, <em>một</em> dòng dữ liệu.</h2>
+    <div class="grid">
+      <article class="card" data-card>
+        <div class="top"><span class="num">01 / OPS</span><span class="tag live">Live</span></div>
+        <h3>MayOS Ops</h3><div class="role">Cho đội ngũ vận hành</div>
+        <p>Trung tâm điều hành khách sạn trên web và điện thoại: đặt phòng, tiền, con người và chất lượng trong cùng một nơi.</p>
+        <ul><li>Timeline đặt phòng, booking đoàn</li><li>Ca trực & bàn giao lễ tân</li><li>QC buồng phòng bằng hình ảnh</li><li>Sự cố, bảo trì có hạn xử lý</li></ul>
+      </article>
+      <article class="card" data-card>
+        <div class="top"><span class="num">02 / STAY</span><span class="tag live">Live</span></div>
+        <h3>MayOS Stay</h3><div class="role">Cho khách lưu trú</div>
+        <p>Người bạn đồng hành số của khách trong suốt kỳ nghỉ — không cần tải app, mở là dùng.</p>
+        <ul><li>Thông tin lưu trú & tiện ích</li><li>Menu và dịch vụ tại chỗ</li><li>Khám phá điểm đến quanh khách sạn</li><li>Đồng bộ trực tiếp với Ops</li></ul>
+      </article>
+      <article class="card" data-card>
+        <div class="top"><span class="num">03 / DIRECT</span><span class="tag live">Live</span></div>
+        <h3>MayOS Direct</h3><div class="role">Cho kênh bán trực tiếp</div>
+        <p>Website thương hiệu được thiết kế để khách đặt thẳng với khách sạn, giảm phụ thuộc vào OTA.</p>
+        <ul><li>Website thương hiệu tối ưu chuyển đổi</li><li>Nội dung, hình ảnh tự quản trị</li><li>Nền tảng cho booking trực tiếp</li><li>Kết nối dữ liệu với Ops</li></ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="day" id="day">
+  <div class="head">
+    <div class="eyebrow" data-reveal>Một ngày trên MayOS</div>
+    <h2 data-reveal>Từ 7 giờ sáng đến <em>giao ca đêm</em>.</h2>
+  </div>
+  <div class="day-track">
+    <article class="moment"><time>07:00</time><div class="who">Lễ tân · Nhận ca</div><h3>Bấm “Nhận ca”, việc hiện ra</h3><p>Checklist đầu ca, lời nhắn của ca trước và các việc còn dở xuất hiện ngay — không cần sổ giao ca.</p></article>
+    <article class="moment"><time>09:30</time><div class="who">Buồng phòng · QC</div><h3>Chụp ảnh, phòng đạt chuẩn</h3><p>Checklist bằng ảnh cho từng phòng. Camera tự chọn khung nét nhất, quản lý duyệt từ xa.</p></article>
+    <article class="moment"><time>11:15</time><div class="who">Kỹ thuật · Sự cố</div><h3>Sự cố tự có hạn xử lý</h3><p>Báo hỏng từ điện thoại, hệ thống đặt hạn theo mức ảnh hưởng: 4 giờ, 24 giờ, 72 giờ hoặc 7 ngày.</p></article>
+    <article class="moment"><time>14:00</time><div class="who">Lễ tân · Check-in</div><h3>Một chạm trên timeline</h3><p>Bấm ô trống để tạo booking, khách đoàn gộp chung một folio, đặt cọc và thanh toán ghi nhận tức thì.</p></article>
+    <article class="moment"><time>16:30</time><div class="who">Khách · Stay</div><h3>Khách tự khám phá</h3><p>Khách mở Stay để xem menu, tiện ích, gợi ý điểm đến — và thuê xe máy theo gói nửa ngày, ngày hay qua đêm.</p></article>
+    <article class="moment"><time>22:00</time><div class="who">Chủ khách sạn · Telegram</div><h3>Giao ca, bạn nhận tổng kết</h3><p>Ca đóng lại, bản tổng kết việc đã làm và việc tồn tự gửi về Telegram của quản lý và chủ đầu tư.</p></article>
+  </div>
+  <div class="day-bar"><i></i></div>
+</section>
+
+<section id="modules">
+  <div class="wrap">
+    <div class="mod-head">
+      <div>
+        <div class="eyebrow" data-reveal>Module</div>
+        <h2 data-reveal>Đã chạy thật, và <em>đang mở rộng</em>.</h2>
+      </div>
+      <div class="legend" data-reveal><span class="tag live">Đang vận hành</span><span class="tag soon">Coming soon</span></div>
+    </div>
+    <div class="mods">
+      <div class="mod"><span class="tag live">Live</span><h4>Timeline đặt phòng</h4><p>Nhìn toàn bộ phòng theo ngày, tạo booking bằng một chạm vào ô trống.</p></div>
+      <div class="mod"><span class="tag live">Live</span><h4>Booking đoàn & master folio</h4><p>Nhiều phòng, một hoá đơn tổng, tính tiền chính xác theo thời gian thực.</p></div>
+      <div class="mod"><span class="tag live">Live</span><h4>Thanh toán & đặt cọc</h4><p>Ghi nhận từng khoản thu, đối soát với tổng booking, không đếm trùng.</p></div>
+      <div class="mod"><span class="tag live">Live</span><h4>Ca trực & bàn giao</h4><p>Nhận ca, giao ca, checklist việc theo ca và lời nhắn cho người kế tiếp.</p></div>
+      <div class="mod"><span class="tag live">Live</span><h4>QC buồng phòng</h4><p>Checklist ảnh, có/không, số đo và việc cần làm — theo phòng hoặc theo ca.</p></div>
+      <div class="mod"><span class="tag live">Live</span><h4>Sự cố & bảo trì</h4><p>5 trạng thái xử lý, hạn tự động theo mức ảnh hưởng, phân quyền rõ ràng.</p></div>
+      <div class="mod"><span class="tag live">Live</span><h4>Dịch vụ cộng thêm</h4><p>Thuê xe máy theo gói, gắn với booking, tính giá tự động theo thời lượng.</p></div>
+      <div class="mod"><span class="tag live">Live</span><h4>Cảnh báo qua Telegram</h4><p>Tổng kết ca và sự kiện quan trọng tự gửi về nhóm vận hành và chủ khách sạn.</p></div>
+      <div class="mod"><span class="tag live">Live</span><h4>Ứng dụng khách lưu trú</h4><p>Thông tin, menu, khám phá điểm đến — mở bằng trình duyệt, không cần cài đặt.</p></div>
+      <div class="mod"><span class="tag live">Live</span><h4>Website thương hiệu</h4><p>Kênh bán trực tiếp của riêng khách sạn, nội dung tự quản trị.</p></div>
+      <div class="mod"><span class="tag live">Live</span><h4>App nhân viên (PWA)</h4><p>Cài lên điện thoại như app thật, dữ liệu cập nhật realtime giữa các máy.</p></div>
+      <div class="mod"><span class="tag live">Live</span><h4>Phân quyền theo vai trò</h4><p>Lễ tân, buồng phòng, kỹ thuật, quản lý — mỗi người thấy đúng việc của mình.</p></div>
+
+      <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Channel Manager</h4><p>Đồng bộ tồn phòng và giá với các OTA, chống overbooking.</p></div>
+      <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Revenue AI</h4><p>Gợi ý giá theo mùa, công suất và nhu cầu thị trường.</p></div>
+      <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Owner & Investor Dashboard</h4><p>Doanh thu, công suất, ADR, RevPAR minh bạch cho chủ đầu tư.</p></div>
+      <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Quản lý đa cơ sở</h4><p>Một tài khoản, nhiều khách sạn, chuẩn vận hành thống nhất.</p></div>
+      <div class="mod soon"><span class="tag soon">Coming soon</span><h4>AI Concierge</h4><p>Trợ lý đa ngôn ngữ trả lời khách 24/7 ngay trong Stay.</p></div>
+      <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Self check-in & khoá thông minh</h4><p>Khách tự nhận phòng, mã mở cửa cấp theo booking.</p></div>
+      <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Hoá đơn điện tử & kế toán</h4><p>Xuất hoá đơn và đẩy số liệu sang phần mềm kế toán.</p></div>
+      <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Năng lượng & IoT</h4><p>Theo dõi điện, nước theo phòng để tối ưu chi phí vận hành.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="partners" id="partners">
+  <div class="wrap">
+    <div class="eyebrow" data-reveal>Mô hình hợp tác</div>
+    <h2 data-reveal>Bạn mang tài sản. Chúng tôi mang <em>hệ điều hành</em>.</h2>
+    <div class="rows">
+      <a class="prow" href="#contact" data-role="Nhà đầu tư" data-reveal>
+        <h3>Nhà đầu tư</h3>
+        <div><p>Đầu tư vào tài sản lưu trú mà không phải “mù” về vận hành. Số liệu minh bạch, quy trình chuẩn hoá ngay từ ngày mở cửa.</p>
+          <ul><li>Vận hành chuẩn hoá</li><li>Báo cáo minh bạch</li><li>Nhân rộng mô hình</li></ul></div>
+        <span class="go"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+      </a>
+      <a class="prow" href="#contact" data-role="Chủ khách sạn" data-reveal>
+        <h3>Chủ khách sạn</h3>
+        <div><p>Homestay, boutique hotel, căn hộ dịch vụ đang chạy bằng sổ và Excel? Chuyển sang MayOS cùng đội ngũ đã tự vận hành khách sạn của chính mình.</p>
+          <ul><li>Triển khai trọn bộ</li><li>Đào tạo nhân viên</li><li>Tăng booking trực tiếp</li></ul></div>
+        <span class="go"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+      </a>
+      <a class="prow" href="#contact" data-role="Đơn vị vận hành" data-reveal>
+        <h3>Đơn vị vận hành</h3>
+        <div><p>Quản lý nhiều cơ sở cho nhiều chủ? Dùng MayOS làm xương sống công nghệ dưới thương hiệu của bạn.</p>
+          <ul><li>White-label</li><li>Tuỳ biến quy trình</li><li>Đồng phát triển tính năng</li></ul></div>
+        <span class="go"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+      </a>
+    </div>
+    <div class="steps">
+      <div class="step" data-reveal><h4>Trao đổi</h4><p>Hiểu tài sản, mô hình và mục tiêu của bạn.</p></div>
+      <div class="step" data-reveal><h4>Tham quan sandbox</h4><p>Xem MayOS chạy thật tại La May Hotel.</p></div>
+      <div class="step" data-reveal><h4>Thiết kế triển khai</h4><p>Cấu hình quy trình, vai trò, checklist theo cơ sở của bạn.</p></div>
+      <div class="step" data-reveal><h4>Vận hành & đồng hành</h4><p>Đào tạo, go-live và cải tiến liên tục.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow" data-reveal>Hợp tác</div>
+      <h2 data-reveal>Cùng xây khách&nbsp;sạn <em>tiếp theo</em>.</h2>
+      <p class="lede" data-reveal>Để lại thông tin, chúng tôi sẽ liên hệ để sắp xếp một buổi trao đổi và mời bạn đến xem hệ thống vận hành trực tiếp tại La May Hotel.</p>
+    </div>
+    <form id="form" data-reveal>
+      <fieldset class="f full"><legend>Bạn là</legend>
+        <div class="chips">
+          <label><input type="radio" name="role" value="Nhà đầu tư" required><span>Nhà đầu tư</span></label>
+          <label><input type="radio" name="role" value="Chủ khách sạn"><span>Chủ khách sạn</span></label>
+          <label><input type="radio" name="role" value="Đơn vị vận hành"><span>Đơn vị vận hành</span></label>
+          <label><input type="radio" name="role" value="Khác"><span>Khác</span></label>
+        </div>
+      </fieldset>
+      <div class="f"><label for="name">Họ và tên</label><input id="name" name="name" autocomplete="name" required></div>
+      <div class="f"><label for="org">Công ty / Khách sạn</label><input id="org" name="org" autocomplete="organization"></div>
+      <div class="f"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" required></div>
+      <div class="f"><label for="phone">Điện thoại</label><input id="phone" name="phone" type="tel" autocomplete="tel" required></div>
+      <div class="f full"><label for="size">Quy mô</label>
+        <select id="size" name="size"><option value="">Chọn quy mô (không bắt buộc)</option><option>Dưới 15 phòng</option><option>15 – 50 phòng</option><option>50 – 150 phòng</option><option>Trên 150 phòng / nhiều cơ sở</option><option>Đang ở giai đoạn dự án</option></select></div>
+      <div class="f full"><label for="msg">Bạn muốn hợp tác như thế nào?</label><textarea id="msg" name="message" placeholder="Vài dòng về tài sản, địa điểm và điều bạn đang tìm kiếm…"></textarea></div>
+      <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;min-height:0;opacity:0">
+      <button class="btn primary magnetic" type="submit">Gửi đề xuất hợp tác</button>
+      <p class="note" id="note">Thông tin của bạn chỉ được dùng để liên hệ về việc hợp tác.</p>
+      <div class="done"><h3>Cảm ơn bạn.</h3><p>Chúng tôi đã nhận được đề xuất và sẽ liên hệ trong thời gian sớm nhất.</p></div>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span>© 2026 MayOS — a La May Hotel company</span>
+  <span><a href="https://lamayhotel.com">lamayhotel.com</a> · by.lamayhotel.com</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* =========================================================
+   CẤU HÌNH FORM: nơi nhận dữ liệu (POST JSON). Hiện gửi email về
+   hello@lamayhotel.com qua dịch vụ FormSubmit. Để trống = không gửi.
+   ========================================================= */
+const FORM_ENDPOINT = "https://formsubmit.co/ajax/hello@lamayhotel.com";
+
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const hasGSAP = typeof gsap !== "undefined";
+const state = { p: 0, mx: 0, my: 0 };   // p: 0 mây → 1 khách sạn → 2 mạng lưới → 3 chân trời
+
+/* ---------------- Song ngữ Việt – Anh ---------------- */
+const EN = {
+"Sản phẩm":"Products","Module":"Modules","Hợp tác":"Partnership","Đề xuất hợp tác":"Partner with us",
+"Khách sạn":"Hotels that","vận hành nhẹ":"run <em>light</em>","như mây.":"as a cloud.",
+"MayOS là bộ công nghệ vận hành lưu trú được xây từ bên trong một khách sạn thật — và chạy thật mỗi ngày tại La May Hotel. Từ lễ tân, buồng phòng, bảo trì đến trải nghiệm của khách: một hệ thống, một nguồn sự thật.":"MayOS is a hospitality operations stack built from inside a real hotel — and run for real, every day, at La May Hotel. Front desk, housekeeping, maintenance and the guest experience: one system, one source of truth.",
+"Xem bộ giải pháp":"See the product suite",
+"sản phẩm đang chạy production":"products running in production","module vận hành đã sẵn sàng":"operations modules ready today","booking trực tiếp tại La May":"direct bookings at La May","dùng thật bởi đội ngũ khách sạn":"used daily by a real hotel team",
+"Sandbox là một khách sạn thật":"The sandbox is a real hotel",
+"Không phải bản demo. Là ca trực sáng nay.":"Not a demo. It’s <em>this morning’s shift</em>.",
+"Mọi tính năng của MayOS đều bắt đầu từ một vấn đề có thật ở quầy lễ tân hay trên hành lang La May — và chỉ được giữ lại khi nhân viên thật sự dùng nó. Bạn không mua một lời hứa; bạn nhận một hệ thống đã trả giá cho từng bài học vận hành.":"Every MayOS feature starts with a real problem at the La May front desk or in its corridors — and survives only if staff actually use it. You are not buying a promise; you are getting a system that has already paid for every operational lesson.",
+"Thiết kế cho người đang bận":"Designed for people who are busy",
+"Khách đang đứng chờ ở quầy. Mọi thao tác chính phải xong trong vài giây, trên điện thoại, bằng một tay.":"A guest is waiting at the desk. Every core action has to finish in seconds, on a phone, with one hand.",
+"Sai về tiền là không chấp nhận được":"Getting money wrong is not acceptable",
+"Folio, đặt cọc, thanh toán theo ca được đối soát tự động — không đếm trùng, không sót.":"Folios, deposits and per-shift payments reconcile automatically — nothing counted twice, nothing missed.",
+"Chủ khách sạn không cần có mặt":"Owners don’t need to be on site",
+"Bàn giao ca, sự cố, chất lượng phòng tự tổng kết và gửi về điện thoại của bạn.":"Shift handovers, incidents and room quality summarise themselves and land on your phone.",
+"Bộ giải pháp":"Product suite",
+"Ba sản phẩm, một dòng dữ liệu.":"Three products, <em>one</em> stream of data.",
+"Cho đội ngũ vận hành":"For the operations team",
+"Trung tâm điều hành khách sạn trên web và điện thoại: đặt phòng, tiền, con người và chất lượng trong cùng một nơi.":"The hotel’s control centre on web and mobile: bookings, money, people and quality in one place.",
+"Timeline đặt phòng, booking đoàn":"Booking timeline, group bookings","Ca trực & bàn giao lễ tân":"Front-desk shifts & handover","QC buồng phòng bằng hình ảnh":"Photo-based housekeeping QC","Sự cố, bảo trì có hạn xử lý":"Incidents & maintenance with deadlines",
+"Cho khách lưu trú":"For in-house guests",
+"Người bạn đồng hành số của khách trong suốt kỳ nghỉ — không cần tải app, mở là dùng.":"The guest’s digital companion throughout the stay — no app to download, just open and use.",
+"Thông tin lưu trú & tiện ích":"Stay information & amenities","Menu và dịch vụ tại chỗ":"Menu and on-site services","Khám phá điểm đến quanh khách sạn":"Discover places around the hotel","Đồng bộ trực tiếp với Ops":"Synced directly with Ops",
+"Cho kênh bán trực tiếp":"For the direct sales channel",
+"Website thương hiệu được thiết kế để khách đặt thẳng với khách sạn, giảm phụ thuộc vào OTA.":"A brand website designed so guests book straight with the hotel, reducing reliance on OTAs.",
+"Website thương hiệu tối ưu chuyển đổi":"Conversion-focused brand website","Nội dung, hình ảnh tự quản trị":"Self-managed content and imagery","Nền tảng cho booking trực tiếp":"Foundation for direct booking","Kết nối dữ liệu với Ops":"Data connected to Ops",
+"Một ngày trên MayOS":"A day on MayOS",
+"Từ 7 giờ sáng đến giao ca đêm.":"From 7 a.m. to the <em>night handover</em>.",
+"Lễ tân · Nhận ca":"Front desk · Shift start","Bấm “Nhận ca”, việc hiện ra":"Tap “Start shift”, the work appears",
+"Checklist đầu ca, lời nhắn của ca trước và các việc còn dở xuất hiện ngay — không cần sổ giao ca.":"The opening checklist, notes from the previous shift and unfinished tasks show up at once — no handover notebook needed.",
+"Buồng phòng · QC":"Housekeeping · QC","Chụp ảnh, phòng đạt chuẩn":"Take the photos, the room passes",
+"Checklist bằng ảnh cho từng phòng. Camera tự chọn khung nét nhất, quản lý duyệt từ xa.":"A photo checklist for every room. The camera keeps the sharpest frame, and managers review remotely.",
+"Kỹ thuật · Sự cố":"Engineering · Incidents","Sự cố tự có hạn xử lý":"Every incident gets its own deadline",
+"Báo hỏng từ điện thoại, hệ thống đặt hạn theo mức ảnh hưởng: 4 giờ, 24 giờ, 72 giờ hoặc 7 ngày.":"Report a fault from a phone and the system sets the deadline by impact: 4 hours, 24 hours, 72 hours or 7 days.",
+"Lễ tân · Check-in":"Front desk · Check-in","Một chạm trên timeline":"One tap on the timeline",
+"Bấm ô trống để tạo booking, khách đoàn gộp chung một folio, đặt cọc và thanh toán ghi nhận tức thì.":"Tap an empty slot to create a booking; groups share one folio, and deposits and payments are recorded instantly.",
+"Khách · Stay":"Guest · Stay","Khách tự khám phá":"Guests explore on their own",
+"Khách mở Stay để xem menu, tiện ích, gợi ý điểm đến — và thuê xe máy theo gói nửa ngày, ngày hay qua đêm.":"Guests open Stay for the menu, amenities and local tips — and rent a motorbike by the half day, day or overnight.",
+"Chủ khách sạn · Telegram":"Owner · Telegram","Giao ca, bạn nhận tổng kết":"Shift closes, you get the summary",
+"Ca đóng lại, bản tổng kết việc đã làm và việc tồn tự gửi về Telegram của quản lý và chủ đầu tư.":"When a shift closes, a summary of what was done and what is still open goes straight to the manager’s and owner’s Telegram.",
+"Đã chạy thật, và đang mở rộng.":"Live today, and <em>still growing</em>.",
+"Đang vận hành":"In operation",
+"Timeline đặt phòng":"Booking timeline","Nhìn toàn bộ phòng theo ngày, tạo booking bằng một chạm vào ô trống.":"See every room by day and create a booking with one tap on an empty slot.",
+"Booking đoàn & master folio":"Group bookings & master folio","Nhiều phòng, một hoá đơn tổng, tính tiền chính xác theo thời gian thực.":"Many rooms, one master bill, totals calculated accurately in real time.",
+"Thanh toán & đặt cọc":"Payments & deposits","Ghi nhận từng khoản thu, đối soát với tổng booking, không đếm trùng.":"Every payment recorded and reconciled against the booking total — never counted twice.",
+"Ca trực & bàn giao":"Shifts & handover","Nhận ca, giao ca, checklist việc theo ca và lời nhắn cho người kế tiếp.":"Start and hand over shifts, with per-shift task checklists and notes for whoever is next.",
+"QC buồng phòng":"Housekeeping QC","Checklist ảnh, có/không, số đo và việc cần làm — theo phòng hoặc theo ca.":"Checklists with photos, yes/no, measurements and to-dos — per room or per shift.",
+"Sự cố & bảo trì":"Incidents & maintenance","5 trạng thái xử lý, hạn tự động theo mức ảnh hưởng, phân quyền rõ ràng.":"Five handling states, automatic deadlines by impact, and clear permissions.",
+"Dịch vụ cộng thêm":"Add-on services","Thuê xe máy theo gói, gắn với booking, tính giá tự động theo thời lượng.":"Motorbike rental packages tied to the booking, priced automatically by duration.",
+"Cảnh báo qua Telegram":"Telegram alerts","Tổng kết ca và sự kiện quan trọng tự gửi về nhóm vận hành và chủ khách sạn.":"Shift summaries and key events sent automatically to the operations group and the owner.",
+"Ứng dụng khách lưu trú":"Guest app","Thông tin, menu, khám phá điểm đến — mở bằng trình duyệt, không cần cài đặt.":"Information, menu and local discovery — opens in the browser, nothing to install.",
+"Website thương hiệu":"Brand website","Kênh bán trực tiếp của riêng khách sạn, nội dung tự quản trị.":"The hotel’s own direct sales channel, with self-managed content.",
+"App nhân viên (PWA)":"Staff app (PWA)","Cài lên điện thoại như app thật, dữ liệu cập nhật realtime giữa các máy.":"Installs on a phone like a native app, with data updating in real time across devices.",
+"Phân quyền theo vai trò":"Role-based access","Lễ tân, buồng phòng, kỹ thuật, quản lý — mỗi người thấy đúng việc của mình.":"Front desk, housekeeping, engineering, management — everyone sees exactly their own work.",
+"Đồng bộ tồn phòng và giá với các OTA, chống overbooking.":"Sync availability and rates with OTAs and prevent overbooking.",
+"Gợi ý giá theo mùa, công suất và nhu cầu thị trường.":"Rate suggestions based on season, occupancy and market demand.",
+"Doanh thu, công suất, ADR, RevPAR minh bạch cho chủ đầu tư.":"Revenue, occupancy, ADR and RevPAR, transparent for owners and investors.",
+"Quản lý đa cơ sở":"Multi-property management","Một tài khoản, nhiều khách sạn, chuẩn vận hành thống nhất.":"One account, many hotels, one operating standard.",
+"Trợ lý đa ngôn ngữ trả lời khách 24/7 ngay trong Stay.":"A multilingual assistant answering guests 24/7, right inside Stay.",
+"Self check-in & khoá thông minh":"Self check-in & smart locks","Khách tự nhận phòng, mã mở cửa cấp theo booking.":"Guests check themselves in, with door codes issued per booking.",
+"Hoá đơn điện tử & kế toán":"E-invoicing & accounting","Xuất hoá đơn và đẩy số liệu sang phần mềm kế toán.":"Issue invoices and push figures to accounting software.",
+"Năng lượng & IoT":"Energy & IoT","Theo dõi điện, nước theo phòng để tối ưu chi phí vận hành.":"Track electricity and water per room to optimise operating costs.",
+"Mô hình hợp tác":"Partnership models",
+"Bạn mang tài sản. Chúng tôi mang hệ điều hành.":"You bring the asset. We bring the <em>operating system</em>.",
+"Nhà đầu tư":"Investors",
+"Đầu tư vào tài sản lưu trú mà không phải “mù” về vận hành. Số liệu minh bạch, quy trình chuẩn hoá ngay từ ngày mở cửa.":"Invest in hospitality assets without being blind to operations. Transparent numbers and standardised processes from opening day.",
+"Vận hành chuẩn hoá":"Standardised operations","Báo cáo minh bạch":"Transparent reporting","Nhân rộng mô hình":"A model that scales",
+"Chủ khách sạn":"Hotel owners",
+"Homestay, boutique hotel, căn hộ dịch vụ đang chạy bằng sổ và Excel? Chuyển sang MayOS cùng đội ngũ đã tự vận hành khách sạn của chính mình.":"Running a homestay, boutique hotel or serviced apartments on notebooks and Excel? Move to MayOS with a team that operates its own hotel.",
+"Triển khai trọn bộ":"Full rollout","Đào tạo nhân viên":"Staff training","Tăng booking trực tiếp":"More direct bookings",
+"Đơn vị vận hành":"Operators",
+"Quản lý nhiều cơ sở cho nhiều chủ? Dùng MayOS làm xương sống công nghệ dưới thương hiệu của bạn.":"Managing several properties for several owners? Use MayOS as the technology backbone under your own brand.",
+"Tuỳ biến quy trình":"Custom workflows","Đồng phát triển tính năng":"Co-developed features",
+"Trao đổi":"Conversation","Hiểu tài sản, mô hình và mục tiêu của bạn.":"Understand your asset, model and goals.",
+"Tham quan sandbox":"Sandbox visit","Xem MayOS chạy thật tại La May Hotel.":"See MayOS running for real at La May Hotel.",
+"Thiết kế triển khai":"Rollout design","Cấu hình quy trình, vai trò, checklist theo cơ sở của bạn.":"Configure workflows, roles and checklists for your property.",
+"Vận hành & đồng hành":"Go-live & support","Đào tạo, go-live và cải tiến liên tục.":"Training, go-live and continuous improvement.",
+"Cùng xây khách sạn tiếp theo.":"Let’s build the <em>next hotel</em> together.",
+"Để lại thông tin, chúng tôi sẽ liên hệ để sắp xếp một buổi trao đổi và mời bạn đến xem hệ thống vận hành trực tiếp tại La May Hotel.":"Leave your details and we’ll get in touch to arrange a conversation and invite you to see the system in operation at La May Hotel.",
+"Bạn là":"You are","Khác":"Other","Họ và tên":"Full name","Công ty / Khách sạn":"Company / Hotel","Điện thoại":"Phone","Quy mô":"Size",
+"Chọn quy mô (không bắt buộc)":"Select a size (optional)","Dưới 15 phòng":"Under 15 rooms","15 – 50 phòng":"15 – 50 rooms","50 – 150 phòng":"50 – 150 rooms","Trên 150 phòng / nhiều cơ sở":"Over 150 rooms / multiple properties","Đang ở giai đoạn dự án":"Still at project stage",
+"Bạn muốn hợp tác như thế nào?":"How would you like to work together?","Gửi đề xuất hợp tác":"Send partnership proposal",
+"Thông tin của bạn chỉ được dùng để liên hệ về việc hợp tác.":"Your details are used only to contact you about partnership.",
+"Cảm ơn bạn.":"Thank you.","Chúng tôi đã nhận được đề xuất và sẽ liên hệ trong thời gian sớm nhất.":"We have received your proposal and will be in touch as soon as possible."
+};
+const T = {
+  vi:{ title:"MayOS by La May — Hệ điều hành cho khách sạn boutique",
+       desc:"MayOS là bộ công nghệ vận hành khách sạn được xây và chạy thật mỗi ngày tại La May Hotel. Dành cho nhà đầu tư, chủ khách sạn và đơn vị vận hành lưu trú.",
+       ph:"Vài dòng về tài sản, địa điểm và điều bạn đang tìm kiếm…", preview:"Bản preview: form chưa được nối với nơi nhận, dữ liệu sẽ không được gửi đi.",
+       sending:"Đang gửi…", send:"Gửi đề xuất hợp tác", fail:"Chưa gửi được. Vui lòng thử lại sau ít phút." },
+  en:{ title:"MayOS by La May — The operating system for boutique hotels",
+       desc:"MayOS is a hotel operations technology stack built and run every day at La May Hotel. For investors, hotel owners and hospitality operators.",
+       ph:"A few lines about your asset, location and what you are looking for…", preview:"Preview build: the form is not connected to a recipient yet, so nothing will be sent.",
+       sending:"Sending…", send:"Send partnership proposal", fail:"Could not send. Please try again in a few minutes." }
+};
+const I18N_SEL = ".nav nav a,.nav .btn,.eyebrow,.hero .line>span,.lede,.btn .t,.hero-cta .btn:not(.primary),.proof div>span,h2,.sandbox li b,.sandbox li div>span,.card .role,.card p,.card li,.tag,.moment .who,.moment h3,.moment p,.mod h4,.mod p,.prow h3,.prow p,.prow li,.step h4,.step p,legend,.chips span,.f>label,option,form button,.note,.done h3,.done p";
+let LANG = "vi";
+function setLang(l){
+  LANG = l === "en" ? "en" : "vi";
+  document.documentElement.lang = LANG;
+  const miss = [];
+  document.querySelectorAll(I18N_SEL).forEach(el => {
+    if ([...el.children].some(c => c.tagName !== "EM")) return;
+    if (el._k === undefined){ el._k = el.textContent.replace(/\s+/g," ").trim(); el._vi = el.innerHTML; }
+    if (!(el._k in EN)) miss.push(el._k);
+    el.innerHTML = LANG === "en" && EN[el._k] ? EN[el._k] : el._vi;
+  });
+  window.__miss = miss;
+  document.title = T[LANG].title;
+  document.querySelector('meta[name="description"]').content = T[LANG].desc;
+  document.getElementById("msg").placeholder = T[LANG].ph;
+  if (!FORM_ENDPOINT) document.getElementById("note").textContent = T[LANG].preview;
+  document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === LANG));
+  try { localStorage.setItem("mayos-lang", LANG); } catch(e){}
+  if (typeof ScrollTrigger !== "undefined") ScrollTrigger.refresh();
+}
+(function initLang(){
+  let l = new URLSearchParams(location.search).get("lang");
+  if (!l){ try { l = localStorage.getItem("mayos-lang"); } catch(e){} }
+  if (!l) l = (navigator.language || "vi").toLowerCase().startsWith("vi") ? "vi" : "en";
+  setLang(l);
+  document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
+})();
+
+/* ---------------- Three.js: đám mây hạt biến hình ---------------- */
+(function initGL(){
+  if (typeof THREE === "undefined") return;
+  const canvas = document.getElementById("gl");
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas, antialias:false, alpha:true }); }
+  catch(e){ canvas.style.display = "none"; return; }
+  const small = innerWidth < 760;
+  const N = small ? 5000 : 11000;
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(42, 1, .1, 50);
+  camera.position.z = 7;
+
+  const A = new Float32Array(N*3), B = new Float32Array(N*3), C = new Float32Array(N*3), D = new Float32Array(N*3), R = new Float32Array(N);
+  const rnd = Math.random, gauss = () => (rnd()+rnd()+rnd()+rnd()-2)/2;
+  const blobs = [[-1.9,-.1,0,1.0],[-.8,.35,.2,1.25],[.4,.15,-.1,1.15],[1.5,-.1,.1,.95],[.1,-.35,.3,1.3],[2.3,-.3,0,.7],[-2.6,-.35,0,.65]];
+  const W=3.6,H=2.6,Dp=1.4, floors=6, cols=9;
+  for (let i=0;i<N;i++){
+    const j=i*3; R[i]=rnd();
+    // A — đám mây
+    const b = blobs[i % blobs.length];
+    A[j]=b[0]+gauss()*b[3]*.95; A[j+1]=b[1]+gauss()*b[3]*.5+.12; A[j+2]=b[2]+gauss()*b[3]*.6;
+    // B — khách sạn (khung lưới tầng & cột)
+    const face = rnd(); let x,y,z;
+    const onH = rnd()<.5;
+    if (face<.42){ z= Dp/2; if(onH){x=(rnd()-.5)*W; y=(Math.round(rnd()*floors)/floors-.5)*H;} else {x=(Math.round(rnd()*cols)/cols-.5)*W; y=(rnd()-.5)*H;} }
+    else if (face<.6){ z=-Dp/2; if(onH){x=(rnd()-.5)*W; y=(Math.round(rnd()*floors)/floors-.5)*H;} else {x=(Math.round(rnd()*cols)/cols-.5)*W; y=(rnd()-.5)*H;} }
+    else if (face<.8){ x=(rnd()<.5?-1:1)*W/2; if(onH){z=(rnd()-.5)*Dp; y=(Math.round(rnd()*floors)/floors-.5)*H;} else {z=(Math.round(rnd()*3)/3-.5)*Dp; y=(rnd()-.5)*H;} }
+    else if (face<.93){ // cửa sổ sáng
+      const c=Math.floor(rnd()*cols), f=Math.floor(rnd()*floors);
+      if ((c*7+f*13)%5<2){ x=((c+.2+rnd()*.6)/cols-.5)*W; y=((f+.2+rnd()*.6)/floors-.5)*H; z=Dp/2-.02; }
+      else { x=(rnd()-.5)*W; y=H/2; z=(rnd()-.5)*Dp; }
+    } else { x=(rnd()-.5)*W; y=H/2; z=(rnd()-.5)*Dp; }
+    B[j]=x; B[j+1]=y; B[j+2]=z;
+    // C — mạng lưới (cầu fibonacci + quỹ đạo)
+    if (i % 6 === 0){ const t=rnd()*Math.PI*2, r=2.55+ (i%12===0?.35:0); C[j]=Math.cos(t)*r; C[j+1]=Math.sin(t)*r*.28; C[j+2]=Math.sin(t)*r; }
+    else { const k=i+.5, phi=Math.acos(1-2*k/N), th=Math.PI*(1+Math.sqrt(5))*k, r=1.9; C[j]=Math.cos(th)*Math.sin(phi)*r; C[j+1]=Math.cos(phi)*r; C[j+2]=Math.sin(th)*Math.sin(phi)*r; }
+    // D — chân trời (mặt sóng)
+    D[j]=(rnd()-.5)*16; D[j+1]=-1.7; D[j+2]=(rnd()-.5)*9-1;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(A,3));
+  geo.setAttribute("aB", new THREE.BufferAttribute(B,3));
+  geo.setAttribute("aC", new THREE.BufferAttribute(C,3));
+  geo.setAttribute("aD", new THREE.BufferAttribute(D,3));
+  geo.setAttribute("aR", new THREE.BufferAttribute(R,1));
+  const mat = new THREE.ShaderMaterial({
+    transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
+    uniforms:{ uP:{value:0}, uT:{value:0}, uPx:{value:renderer.getPixelRatio()}, uSize:{value: small?1.5:1.15} },
+    vertexShader:`
+      attribute vec3 aB; attribute vec3 aC; attribute vec3 aD; attribute float aR;
+      uniform float uP, uT, uPx, uSize; varying float vR; varying float vF;
+      void main(){
+        float d = aR*.35;                                   // lệch pha từng hạt
+        float t1 = smoothstep(0.,1., clamp((uP      -d)/(1.-.35),0.,1.));
+        float t2 = smoothstep(0.,1., clamp((uP-1.   -d)/(1.-.35),0.,1.));
+        float t3 = smoothstep(0.,1., clamp((uP-2.   -d)/(1.-.35),0.,1.));
+        vec3 p = mix(position, aB, t1); p = mix(p, aC, t2);
+        vec3 w = aD; w.y += sin(aD.x*.9+uT*.7)*.22 + cos(aD.z*1.1+uT*.5)*.18;
+        p = mix(p, w, t3);
+        float drift = 1.-t1 + t3*.3;
+        p.x += sin(uT*.35+aR*40.)*.09*drift; p.y += cos(uT*.3+aR*23.)*.06*drift;
+        float burst = sin(3.14159*fract(uP))*(1.-step(2.999,uP));
+        p += normalize(p+.001)*burst*aR*.7;
+        vec4 mv = modelViewMatrix*vec4(p,1.);
+        gl_Position = projectionMatrix*mv;
+        gl_PointSize = uSize*uPx*(1.+aR*2.2)*(7./-mv.z);
+        vR = aR; vF = smoothstep(14.,4.,-mv.z);
+      }`,
+    fragmentShader:`
+      varying float vR; varying float vF;
+      void main(){
+        float d = length(gl_PointCoord-.5); if(d>.5) discard;
+        float a = smoothstep(.5,.0,d);
+        vec3 cream = vec3(.953,.918,.851), amber = vec3(.941,.643,.357), mist = vec3(.55,.66,.80);
+        vec3 c = mix(cream, amber, step(.72,vR)); c = mix(c, mist, step(vR,.22));
+        gl_FragColor = vec4(c, a*.55*vF);
+      }`
+  });
+  const pts = new THREE.Points(geo, mat); pts.frustumCulled = false;
+  const group = new THREE.Group(); group.add(pts); scene.add(group);
+
+  function resize(){
+    const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false);
+    camera.aspect=w/h; camera.position.z = w<760 ? 9.5 : 7; camera.updateProjectionMatrix();
+  }
+  addEventListener("resize", resize); resize();
+  addEventListener("pointermove", e => { state.mx = e.clientX/innerWidth-.5; state.my = e.clientY/innerHeight-.5; }, {passive:true});
+
+  const clock = new THREE.Clock(); let rx=0, ry=0;
+  const offs = [[1.7,.5],[2.0,0],[0,0],[0,0]]; // vị trí nhóm theo từng pha (desktop)
+  function frame(){
+    const t = clock.getElapsedTime(), p = state.p;
+    mat.uniforms.uT.value = t; mat.uniforms.uP.value = p;
+    const k = Math.min(Math.floor(p), 2), f = p-k, wide = innerWidth>=900 ? 1 : 0;
+    const a = offs[k], b = offs[k+1];
+    group.position.x = (a[0]+(b[0]-a[0])*f)*wide;
+    group.position.y = (a[1]+(b[1]-a[1])*f)*wide + (wide?0:1.2*Math.max(0,1-p));
+    const spin = p<.5 ? 0 : (p<2.6 ? t*.12 : 0);
+    ry += ((state.mx*.5 + (p>=.5&&p<2.6 ? -.45 : 0)) - ry)*.04; rx += (state.my*.25 - rx)*.04;
+    group.rotation.y = ry + spin*Math.min(1,Math.max(0,(p-.5)*2))*(1-Math.min(1,Math.max(0,p-2)));
+    group.rotation.x = rx + (p>=.5&&p<2 ? .12 : 0)*Math.min(1,p);
+    renderer.render(scene,camera);
+    if (!REDUCED) requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+/* ---------------- GSAP ---------------- */
+(function initMotion(){
+  const nav = document.getElementById("nav");
+  addEventListener("scroll", () => nav.classList.toggle("scrolled", scrollY > 24), {passive:true});
+  if (!hasGSAP || REDUCED) return;
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Hero vào cảnh
+  const tl = gsap.timeline({ defaults:{ ease:"power4.out" } });
+  tl.from(".nav", { y:-30, opacity:0, duration:.8 })
+    .from(".hero .line>span", { yPercent:110, duration:1.25, stagger:.11 }, .1)
+    .from("[data-hero]", { y:28, opacity:0, duration:.9, stagger:.07 }, .55);
+  document.querySelectorAll("[data-count]").forEach(el => {
+    const end = +el.dataset.count, o = { v:0 };
+    tl.to(o, { v:end, duration:1.6, ease:"power2.out", onUpdate:() => el.textContent = Math.round(o.v) }, .9);
+  });
+
+  // Hạt biến hình theo cuộn trang
+  [["#sandbox",1],["#partners",2],["#contact",3]].forEach(([sel,k]) => {
+    gsap.fromTo(state, { p:k-1 }, { p:k, ease:"none", immediateRender:false,
+      scrollTrigger:{ trigger:sel, start:"top 85%", end:"top 25%", scrub:1.2 } });
+  });
+  // Làm mờ hạt ở các đoạn dày nội dung
+  gsap.to("#gl", { opacity:.35, ease:"none", scrollTrigger:{ trigger:"#products", start:"top 70%", end:"top 20%", scrub:true } });
+  gsap.fromTo("#gl", { opacity:.35 }, { opacity:.6, ease:"none", immediateRender:false, scrollTrigger:{ trigger:"#partners", start:"top 90%", end:"top 40%", scrub:true } });
+
+  // Hiện dần khi cuộn
+  gsap.utils.toArray("[data-reveal]").forEach(el => {
+    gsap.from(el, { y:44, opacity:0, duration:1, ease:"power3.out", scrollTrigger:{ trigger:el, start:"top 90%" } });
+  });
+  gsap.from("[data-card]", { y:80, opacity:0, rotateX:-12, transformPerspective:900, duration:1.1, ease:"power3.out", stagger:.12,
+    scrollTrigger:{ trigger:".products .grid", start:"top 82%" } });
+  ScrollTrigger.batch(".mod", { start:"top 92%", once:true,
+    onEnter: els => gsap.from(els, { opacity:0, y:26, duration:.7, ease:"power2.out", stagger:.05 }) });
+
+  // "Một ngày": cuộn ngang trên desktop
+  const mm = gsap.matchMedia();
+  mm.add("(min-width: 861px)", () => {
+    const track = document.querySelector(".day-track");
+    const dist = () => Math.max(0, track.scrollWidth - innerWidth);
+    const tw = gsap.to(track, { x:() => -dist(), ease:"none",
+      scrollTrigger:{ trigger:"#day", start:"center center", end:() => "+=" + dist(), pin:true, scrub:.8, invalidateOnRefresh:true, anticipatePin:1 } });
+    gsap.to(".day-bar i", { scaleX:1, ease:"none", scrollTrigger:{ trigger:"#day", start:"center center", end:() => "+=" + dist(), scrub:.8 } });
+    gsap.utils.toArray(".moment").forEach(m => gsap.from(m.querySelector("time"), { opacity:.25, scale:.86, transformOrigin:"left bottom",
+      scrollTrigger:{ trigger:m, containerAnimation:tw, start:"left 85%", end:"left 45%", scrub:true } }));
+  });
+  mm.add("(max-width: 860px)", () => {
+    gsap.utils.toArray(".moment").forEach(m => gsap.from(m, { y:40, opacity:0, duration:.8, ease:"power3.out", scrollTrigger:{ trigger:m, start:"top 90%" } }));
+  });
+
+  // Nút nam châm + thẻ nghiêng theo chuột (chỉ khi có chuột)
+  if (matchMedia("(hover:hover) and (pointer:fine)").matches){
+    document.querySelectorAll(".magnetic").forEach(b => {
+      const xTo = gsap.quickTo(b,"x",{duration:.4,ease:"power3"}), yTo = gsap.quickTo(b,"y",{duration:.4,ease:"power3"});
+      b.addEventListener("pointermove", e => { const r=b.getBoundingClientRect(); xTo((e.clientX-r.left-r.width/2)*.28); yTo((e.clientY-r.top-r.height/2)*.4); });
+      b.addEventListener("pointerleave", () => { xTo(0); yTo(0); });
+    });
+    document.querySelectorAll("[data-card]").forEach(c => {
+      c.addEventListener("pointermove", e => { const r=c.getBoundingClientRect(), x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height;
+        c.style.setProperty("--mx", x*100+"%"); c.style.setProperty("--my", y*100+"%");
+        gsap.to(c, { rotateY:(x-.5)*7, rotateX:(.5-y)*7, transformPerspective:900, duration:.5, ease:"power2.out" }); });
+      c.addEventListener("pointerleave", () => gsap.to(c, { rotateX:0, rotateY:0, duration:.7, ease:"power3.out" }));
+    });
+  }
+  addEventListener("load", () => ScrollTrigger.refresh());
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => ScrollTrigger.refresh());
+})();
+
+/* ---------------- Liên kết & form ---------------- */
+document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener("click", e => {
+  const el = document.querySelector(a.getAttribute("href")); if (!el) return;
+  e.preventDefault();
+  if (a.dataset.role){ const r = document.querySelector('input[name="role"][value="'+a.dataset.role+'"]'); if (r) r.checked = true; }
+  el.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block:"start" });
+}));
+
+(function initForm(){
+  const form = document.getElementById("form"), note = document.getElementById("note");
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const btn = form.querySelector("button"), data = Object.fromEntries(new FormData(form));
+    if (data._honey) { form.classList.add("sent"); return; }
+    delete data._honey;
+    Object.assign(data, { _subject:"MayOS — Đề xuất hợp tác: " + (data.name||"") + (data.org ? " ("+data.org+")" : ""), _template:"table", _captcha:"false", _replyto:data.email, language:LANG, page:location.href });
+    btn.disabled = true; btn.textContent = T[LANG].sending;
+    try {
+      if (FORM_ENDPOINT){
+        const res = await fetch(FORM_ENDPOINT, { method:"POST", headers:{ "Content-Type":"application/json", "Accept":"application/json" }, body:JSON.stringify(data) });
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok || String(out.success) !== "true") throw new Error(out.message || res.status);
+      }
+      form.classList.add("sent");
+      if (hasGSAP && !REDUCED) gsap.from(".done > *", { y:24, opacity:0, duration:.8, stagger:.1, ease:"power3.out" });
+    } catch(err){
+      btn.disabled = false; btn.textContent = T[LANG].send;
+      note.textContent = T[LANG].fail; note.style.color = "var(--amber)";
+    }
+  });
+})();
+</script>
+</body>
+</html>
