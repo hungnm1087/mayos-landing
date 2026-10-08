@@ -765,6 +765,8 @@ document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener("click
     const btn = form.querySelector("button"), data = Object.fromEntries(new FormData(form));
     if (data._honey) { form.classList.add("sent"); return; }
     delete data._honey;
+    let last = 0; try { last = +localStorage.getItem("mayos-sent") || 0; } catch(e){}
+    if (Date.now() - last < 120000) { form.classList.add("sent"); return; }  // chống gửi lặp trong 2 phút
     Object.assign(data, { _subject:"MayOS — Đề xuất hợp tác: " + (data.name||"") + (data.org ? " ("+data.org+")" : ""), _template:"table", _captcha:"false", _replyto:data.email, language:LANG, page:location.href });
     btn.disabled = true; btn.textContent = T[LANG].sending;
     try {
@@ -773,6 +775,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener("click
         const out = await res.json().catch(() => ({}));
         if (!res.ok || String(out.success) !== "true") throw new Error(out.message || res.status);
       }
+      try { localStorage.setItem("mayos-sent", Date.now()); } catch(e){}
       form.classList.add("sent");
       if (hasGSAP && !REDUCED) gsap.from(".done > *", { y:24, opacity:0, duration:.8, stagger:.1, ease:"power3.out" });
     } catch(err){
