@@ -194,6 +194,7 @@ form.sent .done{display:block}
 
 footer{padding:36px var(--pad);border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--dim);background:rgba(10,13,18,.8)}
 footer a:hover{color:var(--cream)}
+footer .legal{flex-basis:100%;font-size:12.5px;line-height:1.6}
 @media(prefers-reduced-motion:reduce){.tag.live::before{animation:none}}
 </style>
 </head>
@@ -426,6 +427,7 @@ footer a:hover{color:var(--cream)}
 <footer>
   <span>© 2026 MayOS by La May Hotel · Est. 2025</span>
   <span><a href="https://lamayhotel.com">lamayhotel.com</a> · by.lamayhotel.com</span>
+  <p class="legal">MayOS được phát triển và vận hành bởi Hộ kinh doanh Nguyễn Mạnh Hùng 6 (đăng ký ngày 24/12/2025, Hoa Lư, Ninh Bình, Việt Nam) · Liên hệ: hello@lamayhotel.com</p>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -526,7 +528,8 @@ const EN = {
 "Chọn quy mô (không bắt buộc)":"Select a size (optional)","Dưới 15 phòng":"Under 15 rooms","15 – 50 phòng":"15 – 50 rooms","50 – 150 phòng":"50 – 150 rooms","Trên 150 phòng / nhiều cơ sở":"Over 150 rooms / multiple properties","Đang ở giai đoạn dự án":"Still at project stage",
 "Bạn muốn hợp tác như thế nào?":"How would you like to work together?","Gửi đề xuất hợp tác":"Send partnership proposal",
 "Thông tin của bạn chỉ được dùng để liên hệ về việc hợp tác.":"Your details are used only to contact you about partnership.",
-"Cảm ơn bạn.":"Thank you.","Chúng tôi đã nhận được đề xuất và sẽ liên hệ trong thời gian sớm nhất.":"We have received your proposal and will be in touch as soon as possible.",
+"Cảm ơn bạn.":"Thank you.",
+"MayOS được phát triển và vận hành bởi Hộ kinh doanh Nguyễn Mạnh Hùng 6 (đăng ký ngày 24/12/2025, Hoa Lư, Ninh Bình, Việt Nam) · Liên hệ: hello@lamayhotel.com":"MayOS is developed and operated by Hộ kinh doanh Nguyễn Mạnh Hùng 6 (Nguyen Manh Hung 6 Household Business), registered on 24 December 2025 in Hoa Lu, Ninh Binh, Vietnam · Contact: hello@lamayhotel.com","Chúng tôi đã nhận được đề xuất và sẽ liên hệ trong thời gian sớm nhất.":"We have received your proposal and will be in touch as soon as possible.",
 "Một đội ngũ tinh gọn, xây cùng Claude.":"A lean team, building with <em>Claude</em>.",
 "MayOS được phát triển với Claude của Anthropic làm cộng sự kỹ thuật — từ thiết kế quy trình, lập trình đến kiểm thử. Bước tiếp theo là đưa Claude vào chính sản phẩm, phục vụ khách lưu trú và chủ khách sạn.":"MayOS is developed with Anthropic’s Claude as an engineering partner — from workflow design and coding to testing. The next step is bringing Claude into the product itself, serving guests and hotel owners.",
 "Phát triển cùng Claude":"Developed with Claude",
@@ -544,7 +547,7 @@ const T = {
        ph:"A few lines about your asset, location and what you are looking for…", preview:"Preview build: the form is not connected to a recipient yet, so nothing will be sent.",
        sending:"Sending…", send:"Send partnership proposal", fail:"Could not send. Please try again in a few minutes." }
 };
-const I18N_SEL = ".nav nav a,.nav .btn,.eyebrow,.hero .line>span,.lede,.btn .t,.hero-cta .btn:not(.primary),.proof div>span,h2,.sandbox li b,.sandbox li div>span,.card .role,.ai h3,.card p,.card li,.tag,.moment .who,.moment h3,.moment p,.mod h4,.mod p,.prow h3,.prow p,.prow li,.step h4,.step p,legend,.chips span,.f>label,option,form button,.note,.done h3,.done p";
+const I18N_SEL = ".nav nav a,.nav .btn,.eyebrow,.hero .line>span,.lede,.btn .t,.hero-cta .btn:not(.primary),.proof div>span,h2,.sandbox li b,.sandbox li div>span,.card .role,.ai h3,.card p,.card li,.tag,.moment .who,.moment h3,.moment p,.mod h4,.mod p,.prow h3,.prow p,.prow li,.step h4,.step p,legend,.chips span,.f>label,option,form button,.note,.done h3,.done p,footer .legal";
 let LANG = "vi";
 function setLang(l){
   LANG = l === "en" ? "en" : "vi";
