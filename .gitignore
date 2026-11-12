@@ -1,0 +1,4 @@
+node_modules
+mayos/assets/*.jpg
+docs/evidence/
+.DS_Store

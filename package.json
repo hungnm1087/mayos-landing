@@ -1,0 +1,7 @@
+{
+  "name": "mayos-landing",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test scripts/landing.test.mjs" },
+  "devDependencies": { "jsdom": "20.0.3" }
+}
