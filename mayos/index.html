@@ -137,9 +137,19 @@ h2 em,h1 em{font-style:italic;color:var(--amber)}
 .macbook::before{content:"";position:absolute;top:4px;left:50%;width:4px;height:4px;border-radius:50%;background:#080a0d}
 .macbook::after{content:"";position:absolute;left:-4%;right:-4%;bottom:-10px;height:11px;border-radius:1px 1px 65% 65%/1px 1px 100% 100%;background:linear-gradient(#c4c8cd,#777e87 60%,#454d56);box-shadow:0 8px 15px #0005}
 .macbook img{display:block;width:100%;height:auto;aspect-ratio:1440/920;object-fit:cover;object-position:top;border-radius:5px;background:#fff}
-.iphone{width:240px;padding:28px 9px 12px;border:1px solid #899096;border-radius:39px;background:linear-gradient(135deg,#656a6e,#111417 40%,#42484c);box-shadow:0 25px 55px #0009}
-.iphone::before{content:"";position:absolute;z-index:1;left:50%;top:8px;transform:translateX(-50%);width:60px;height:12px;border-radius:20px;background:#101215}
-.iphone img{display:block;width:100%;height:auto;aspect-ratio:390/844;object-fit:cover;object-position:top;border-radius:30px;background:#f5f6f4}
+.phone-display{display:contents}
+.phone-status,.phone-home{display:none}
+.iphone{width:280px;padding:7px;border:1px solid #899096;border-radius:42px;background:linear-gradient(135deg,#777d81,#15181b 40%,#53595e);box-shadow:0 25px 55px #0009;container-type:inline-size}
+.iphone::before{content:none}
+.iphone .phone-display{display:block;overflow:hidden;border-radius:35px;background:#fff;color:#101215}
+.iphone .phone-status{display:flex}
+.iphone .phone-home{display:grid}
+.phone-status{height:14cqw;position:relative;align-items:center;justify-content:space-between;padding:0 6cqw;font:600 3.6cqw/1 system-ui,sans-serif;background:#fff}
+.phone-status::before{content:"";position:absolute;top:3cqw;left:50%;transform:translateX(-50%);width:31cqw;height:8.5cqw;border-radius:20px;background:#08090b}
+.phone-status svg{width:18cqw;height:4cqw;fill:currentColor}
+.phone-home{height:8cqw;place-items:center;background:#fff}
+.phone-home::after{content:"";width:35cqw;height:1.2cqw;border-radius:8px;background:#101215}
+.iphone img{display:block;width:100%;height:auto;aspect-ratio:auto;object-fit:contain;border-radius:0;background:#f5f6f4}
 .scene-copy{padding:36px;align-self:center}
 .scene-copy .scene-index{font:11px var(--mono);letter-spacing:.12em;color:var(--amber)}
 .scene-copy h3{font-size:clamp(28px,3vw,40px);margin:20px 0}
@@ -151,7 +161,7 @@ h2 em,h1 em{font-style:italic;color:var(--amber)}
 .screen-lightbox img{display:block;max-width:100%;max-height:76dvh;width:auto;height:auto;margin:auto;object-fit:contain}
 .screen-lightbox p{font:12px var(--sans);text-align:center;margin:12px 0 0;color:var(--mist)}
 .lightbox-close{position:absolute;right:12px;top:8px;background:transparent;border:0;color:var(--cream);font-size:28px;width:40px;height:40px;cursor:pointer}
-@media(max-width:860px){.showcase-head{grid-template-columns:1fr}.scene-tabs{display:none}.product-scene{grid-template-columns:1fr;margin-top:28px}.scene-copy{order:-1;padding:28px 24px 18px}.scene-copy h3{margin:14px 0;font-size:30px}.scene-copy p{font-size:16px}.scene-copy .scene-note{margin-top:14px}.device-stage{min-height:0;padding:18px 24px 34px}.iphone,.responsive-device{width:min(100%,320px)}.responsive-device{padding:28px 9px 12px;border-radius:39px}.responsive-device::before{top:8px;width:60px;height:12px;transform:translateX(-50%);border-radius:20px}.responsive-device::after{display:none}.responsive-device img{aspect-ratio:430/932;border-radius:30px}.iphone img{aspect-ratio:430/932}}
+@media(max-width:860px){.showcase-head{grid-template-columns:1fr}.scene-tabs{display:none}.product-scene{grid-template-columns:1fr;margin-top:28px}.scene-copy{order:-1;padding:28px 24px 18px}.scene-copy h3{margin:14px 0;font-size:30px}.scene-copy p{font-size:16px}.scene-copy .scene-note{margin-top:14px}.device-stage{min-height:0;padding:18px 24px 34px}.iphone,.responsive-device{width:min(100%,320px)}.responsive-device{padding:7px;border-radius:42px;container-type:inline-size}.responsive-device::before,.responsive-device::after{content:none}.responsive-device .phone-display{display:block;overflow:hidden;border-radius:35px;background:#fff;color:#101215}.responsive-device .phone-status{display:flex}.responsive-device .phone-home{display:grid}.responsive-device img{aspect-ratio:auto;border-radius:0;object-fit:contain}}
 
 /* ---------- day (horizontal) ---------- */
 .day{padding-left:0;padding-right:0;overflow:hidden}
@@ -899,6 +909,18 @@ function setLang(l){
 
 /* ---------------- Liên kết & form ---------------- */
 (function initScreens(){
+  // Native iPhone chrome belongs inside the display, outside the app's safe area.
+  document.querySelectorAll('.screen-zoom.iphone,.screen-zoom.responsive-device').forEach(button => {
+    const display = document.createElement('span');
+    display.className = 'phone-display';
+    const content = button.querySelector('picture') || button.querySelector('img');
+    const status = document.createElement('span');
+    status.className = 'phone-status'; status.setAttribute('aria-hidden','true');
+    status.innerHTML = '<span>9:41</span><svg viewBox="0 0 72 16" aria-hidden="true"><path d="M0 12h3v4H0zm5-4h3v8H5zm5-4h3v12h-3zm5-4h3v16h-3z"/><path d="M23 5q10-9 20 0l-2 2q-8-7-16 0zm4 4q6-6 12 0l-2 2q-4-4-8 0zm4 4 2-2 2 2-2 2z"/><rect x="49" y="2" width="20" height="12" rx="3" fill="none" stroke="currentColor"/><rect x="51" y="4" width="16" height="8" rx="1"/><path d="M70 5h2v6h-2z"/></svg>';
+    const home = document.createElement('span');
+    home.className = 'phone-home'; home.setAttribute('aria-hidden','true');
+    display.append(status,content,home); button.append(display);
+  });
   const scenes = document.querySelectorAll(".product-scene");
   const buttons = document.querySelectorAll("[data-scene-target]");
   const dialog = document.getElementById("screen-lightbox");
