@@ -81,3 +81,15 @@ test('iPhone frames reserve real display safe areas above and below the app',()=
   }
   dom.window.close();
 });
+test('showcase explains the connected experience and labels functions, not hardware',()=>{
+  const dom=page({mobile:true}),d=dom.window.document;
+  assert.equal(d.querySelector('#screens-title').textContent,'Một hệ thống. Nhiều điểm chạm.');
+  for(const lang of ['vi','en']){
+    d.querySelector('[data-lang="'+lang+'"]').click();
+    for(const label of d.querySelectorAll('.scene-index')){
+      assert.doesNotMatch(label.textContent,/MacBook|iPhone/i);
+      assert.ok(!dom.window.__miss.includes(label._k));
+    }
+  }
+  dom.window.close();
+});
