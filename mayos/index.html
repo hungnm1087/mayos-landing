@@ -151,7 +151,7 @@ h2 em,h1 em{font-style:italic;color:var(--amber)}
 .screen-lightbox img{display:block;max-width:100%;max-height:76dvh;width:auto;height:auto;margin:auto;object-fit:contain}
 .screen-lightbox p{font:12px var(--sans);text-align:center;margin:12px 0 0;color:var(--mist)}
 .lightbox-close{position:absolute;right:12px;top:8px;background:transparent;border:0;color:var(--cream);font-size:28px;width:40px;height:40px;cursor:pointer}
-@media(max-width:860px){.showcase-head{grid-template-columns:1fr}.product-scene{grid-template-columns:1fr}.device-stage{min-height:0;padding:40px 26px}.scene-copy{padding:28px}.iphone{width:230px}.scene-copy h3{margin:14px 0}.scene-tabs{gap:7px}.scene-tabs button{padding:10px 14px;font-size:13px}}
+@media(max-width:860px){.showcase-head{grid-template-columns:1fr}.scene-tabs{display:none}.product-scene{grid-template-columns:1fr;margin-top:28px}.scene-copy{order:-1;padding:28px 24px 18px}.scene-copy h3{margin:14px 0;font-size:30px}.scene-copy p{font-size:16px}.scene-copy .scene-note{margin-top:14px}.device-stage{min-height:0;padding:18px 24px 34px}.iphone,.responsive-device{width:min(100%,320px)}.responsive-device{padding:28px 9px 12px;border-radius:39px}.responsive-device::before{top:8px;width:60px;height:12px;transform:translateX(-50%);border-radius:20px}.responsive-device::after{display:none}.responsive-device img{aspect-ratio:430/932;border-radius:30px}.iphone img{aspect-ratio:430/932}}
 
 /* ---------- day (horizontal) ---------- */
 .day{padding-left:0;padding-right:0;overflow:hidden}
@@ -336,29 +336,39 @@ footer .legal{flex-basis:100%;font-size:12.5px;line-height:1.6}
   <div class="wrap">
     <div class="showcase-head">
       <div><div class="eyebrow">Bên trong MayOS</div><h2 id="screens-title">Công việc thật. <em>Giao diện thật.</em></h2></div>
-      <p class="lede">Từ lịch phòng trên máy tính đến checklist trên điện thoại. Chọn một góc nhìn để xem cách MayOS đồng hành cùng đội ngũ.</p>
+      <p class="lede">Từ lịch phòng của đội ngũ đến trải nghiệm của khách. Những màn hình thật, trong một hệ sinh thái liền mạch.</p>
     </div>
     <div class="scene-tabs" role="group" aria-label="Chọn màn hình / Choose a screen">
       <button type="button" data-scene-target="timeline" aria-pressed="true" aria-controls="scene-timeline">Lịch phòng</button>
-      <button type="button" data-scene-target="qc" aria-pressed="false" aria-controls="scene-qc">QC buồng phòng</button>
+      <button type="button" data-scene-target="qc" aria-pressed="false" aria-controls="scene-qc">Buồng phòng</button>
       <button type="button" data-scene-target="pnl" aria-pressed="false" aria-controls="scene-pnl">Chi phí &amp; PnL</button>
+      <button type="button" data-scene-target="website" aria-pressed="false" aria-controls="scene-website">Website</button>
+      <button type="button" data-scene-target="stay" aria-pressed="false" aria-controls="scene-stay">Stay</button>
       <button type="button" data-scene-target="chat" aria-pressed="false" aria-controls="scene-chat">Lammy 24/7</button>
     </div>
     <figure class="product-scene" id="scene-timeline">
-      <div class="device-stage"><button class="screen-zoom macbook" type="button" data-screen="timeline" aria-label="Phóng lớn / Enlarge: Timeline"><img src="./assets/timeline.webp" width="1440" height="920" loading="lazy" decoding="async" alt="Timeline đặt phòng MayOS với booking minh họa trên khung MacBook"></button></div>
+      <div class="device-stage"><button class="screen-zoom macbook responsive-device" type="button" data-screen="timeline" aria-label="Phóng lớn / Enlarge: Timeline"><picture><source media="(max-width:860px)" srcset="./assets/timeline-mobile.webp"><img src="./assets/timeline-v2.webp" width="1440" height="960" loading="lazy" decoding="async" alt="Lịch phòng Ops thật với booking minh họa trước và sau hôm nay, công suất 80%"></picture></button></div>
       <figcaption class="scene-copy"><span class="scene-index">01 / OPS · MACBOOK</span><h3>Một lịch phòng, cả đội cùng nắm.</h3><p>Nhìn booking theo phòng và ngày, phân biệt trạng thái bằng màu, kiểm tra lịch trước khi nhận thêm khách.</p><p class="scene-note">Ảnh từ component Ops thật, dùng tên và dữ liệu minh họa. Không phải số liệu kinh doanh của La May.</p><p class="scene-hint">Chạm vào màn hình để xem lớn</p></figcaption>
     </figure>
     <figure class="product-scene" id="scene-qc" hidden>
-      <div class="device-stage"><button class="screen-zoom iphone" type="button" data-screen="qc" aria-label="Phóng lớn / Enlarge: QC"><img src="./assets/qc.webp" width="390" height="844" loading="lazy" decoding="async" alt="Checklist QC buồng phòng MayOS trên khung iPhone"></button></div>
-      <figcaption class="scene-copy"><span class="scene-index">02 / OPS · IPHONE</span><h3>Đúng checklist, ngay tại phòng.</h3><p>Nhân viên chụp hiện trạng theo từng góc, ghi nhận vấn đề và hoàn tất lượt dọn trên điện thoại.</p><p class="scene-note">Giao diện QC thật với một lượt dọn minh họa. Không chụp hay sử dụng ảnh phòng đang có khách.</p><p class="scene-hint">Chạm vào màn hình để xem lớn</p></figcaption>
+      <div class="device-stage"><button class="screen-zoom iphone" type="button" data-screen="qc" aria-label="Phóng lớn / Enlarge: Housekeeping"><img src="./assets/housekeeping.webp" width="430" height="932" loading="lazy" decoding="async" alt="Danh sách buồng phòng Ops thật với phòng đang dọn, ưu tiên và chờ khách trả phòng"></button></div>
+      <figcaption class="scene-copy"><span class="scene-index">02 / OPS · IPHONE</span><h3>Mở danh sách. Biết phòng nào cần dọn.</h3><p>Đang dọn, ưu tiên hay chờ khách trả phòng — thứ tự công việc rõ ràng để cả lễ tân và buồng phòng cùng theo dõi.</p><p class="scene-note">Màn hình Buồng phòng thật, dùng lượt dọn và nhân viên minh họa.</p><p class="scene-hint">Chạm vào màn hình để xem lớn</p></figcaption>
     </figure>
     <figure class="product-scene" id="scene-pnl" hidden>
-      <div class="device-stage"><button class="screen-zoom macbook" type="button" data-screen="pnl" aria-label="Phóng lớn / Enlarge: PnL"><img src="./assets/pnl.webp" width="1440" height="920" loading="lazy" decoding="async" alt="Báo cáo lãi lỗ MayOS với số liệu giả trên khung MacBook"></button></div>
+      <div class="device-stage"><button class="screen-zoom macbook responsive-device" type="button" data-screen="pnl" aria-label="Phóng lớn / Enlarge: PnL"><picture><source media="(max-width:860px)" srcset="./assets/pnl-mobile.webp"><img src="./assets/pnl.webp" width="1440" height="920" loading="lazy" decoding="async" alt="Báo cáo lãi lỗ MayOS với số liệu giả trên khung MacBook"></picture></button></div>
       <figcaption class="scene-copy"><span class="scene-index">03 / OPS · MACBOOK</span><h3>Biết doanh thu. Hiểu phần còn lại.</h3><p>Đọc lợi nhuận hoạt động cùng chi phí trọng yếu, công suất, ADR và RevPAR. Đi thẳng từ báo cáo sang Sổ chi khi cần bổ sung.</p><p class="scene-note">Tất cả số tiền trong ảnh là dữ liệu giả. Kết quả thực tế phụ thuộc dữ liệu đã ghi nhận và quy tắc phân bổ.</p><p class="scene-hint">Chạm vào màn hình để xem lớn</p></figcaption>
+    </figure>
+    <figure class="product-scene" id="scene-website" hidden>
+      <div class="device-stage"><button class="screen-zoom macbook responsive-device" type="button" data-screen="website" aria-label="Phóng lớn / Enlarge: Website"><picture><source media="(max-width:860px)" srcset="./assets/website-mobile.webp"><img src="./assets/website.webp" width="1440" height="960" loading="lazy" decoding="async" alt="Website La May Boutique Hotel thực tế trên desktop"></picture></button></div>
+      <figcaption class="scene-copy"><span class="scene-index">04 / WEBSITE · MACBOOK</span><h3>Ấn tượng đầu tiên, mang bản sắc riêng.</h3><p>Không gian, phòng nghỉ và câu chuyện khách sạn được giới thiệu trên website riêng — cùng lối vào đặt phòng trực tiếp.</p><p class="scene-note">Ảnh chụp website công khai của La May Boutique Hotel.</p><p class="scene-hint">Chạm vào màn hình để xem lớn</p></figcaption>
+    </figure>
+    <figure class="product-scene" id="scene-stay" hidden>
+      <div class="device-stage"><button class="screen-zoom iphone" type="button" data-screen="stay" aria-label="Phóng lớn / Enlarge: Stay"><img src="./assets/stay.webp" width="430" height="932" loading="lazy" decoding="async" alt="Stay at La May thật với hành động nhanh, yêu cầu dọn phòng và thông tin Wi-Fi minh họa"></button></div>
+      <figcaption class="scene-copy"><span class="scene-index">05 / STAY · IPHONE</span><h3>Dịch vụ trong tầm tay của khách.</h3><p>Tìm Wi-Fi, gọi lễ tân, yêu cầu thêm khăn hay dọn phòng. Khách chủ động hơn, đội ngũ tiếp nhận thông tin rõ ràng hơn.</p><p class="scene-note">Giao diện Stay thật, dùng hồ sơ khách và thông tin kết nối giả.</p><p class="scene-hint">Chạm vào màn hình để xem lớn</p></figcaption>
     </figure>
     <figure class="product-scene" id="scene-chat" hidden>
       <div class="device-stage"><button class="screen-zoom iphone" type="button" data-screen="chat" aria-label="Phóng lớn / Enlarge: Lammy"><img src="./assets/chat.webp" width="390" height="844" loading="lazy" decoding="async" alt="Ví dụ hội thoại tư vấn Lammy trên khung iPhone, không phải cuộc trò chuyện thật"></button></div>
-      <figcaption class="scene-copy"><span class="scene-index">04 / LAMMY · IPHONE</span><h3>Một lời hỏi phòng, dù đã nửa đêm.</h3><p>Lammy tiếp nhận nhu cầu và tư vấn bước đặt phòng tiếp theo qua Zalo hoặc Facebook Messenger, kể cả ngoài giờ lễ tân.</p><p class="scene-note">Hội thoại minh họa, không phải tin nhắn khách thật hay ảnh chụp ứng dụng Zalo/Messenger.</p><p class="scene-hint">Chạm vào màn hình để xem lớn</p></figcaption>
+      <figcaption class="scene-copy"><span class="scene-index">06 / LAMMY · IPHONE</span><h3>Một lời hỏi phòng, dù đã nửa đêm.</h3><p>Lammy tiếp nhận nhu cầu và tư vấn bước đặt phòng tiếp theo qua Zalo hoặc Facebook Messenger, kể cả ngoài giờ lễ tân.</p><p class="scene-note">Hội thoại minh họa, không phải tin nhắn khách thật hay ảnh chụp ứng dụng Zalo/Messenger.</p><p class="scene-hint">Chạm vào màn hình để xem lớn</p></figcaption>
     </figure>
   </div>
 </section>
@@ -528,6 +538,18 @@ const state = { p: 0, mx: 0, my: 0 };   // p: 0 mây → 1 khách sạn → 2 m�
 
 /* ---------------- Song ngữ Việt – Anh ---------------- */
 const EN = {
+"Từ lịch phòng của đội ngũ đến trải nghiệm của khách. Những màn hình thật, trong một hệ sinh thái liền mạch.":"From team operations to the guest experience. Real screens, one connected ecosystem.",
+"Buồng phòng":"Housekeeping",
+"Mở danh sách. Biết phòng nào cần dọn.":"Open the queue. Know what comes next.",
+"Đang dọn, ưu tiên hay chờ khách trả phòng — thứ tự công việc rõ ràng để cả lễ tân và buồng phòng cùng theo dõi.":"In progress, priority or waiting for checkout — a clear work queue shared by front desk and housekeeping.",
+"Màn hình Buồng phòng thật, dùng lượt dọn và nhân viên minh họa.":"The real housekeeping screen, with fictional tasks and staff.",
+"Website":"Website","Stay":"Stay",
+"Ấn tượng đầu tiên, mang bản sắc riêng.":"A first impression with its own identity.",
+"Không gian, phòng nghỉ và câu chuyện khách sạn được giới thiệu trên website riêng — cùng lối vào đặt phòng trực tiếp.":"Spaces, rooms and the hotel's story on its own website — with a direct path to booking.",
+"Ảnh chụp website công khai của La May Boutique Hotel.":"A screenshot of La May Boutique Hotel's public website.",
+"Dịch vụ trong tầm tay của khách.":"Guest services, within easy reach.",
+"Tìm Wi-Fi, gọi lễ tân, yêu cầu thêm khăn hay dọn phòng. Khách chủ động hơn, đội ngũ tiếp nhận thông tin rõ ràng hơn.":"Find Wi-Fi, call reception, request towels or housekeeping. Guests feel more independent; the team receives clearer requests.",
+"Giao diện Stay thật, dùng hồ sơ khách và thông tin kết nối giả.":"The real Stay interface, with a fictional guest profile and demo connection details.",
 "Ghi nhận từng khoản thu, đối chiếu tổng booking và theo dõi số tiền còn lại.":"Record each payment, reconcile it against the booking total and track the remaining balance.",
 "nền tảng kết nối: Ops · Stay · Direct":"connected platforms: Ops · Stay · Direct",
 "đồng bộ tồn phòng trực tiếp":"direct room-inventory sync",
@@ -882,15 +904,21 @@ function setLang(l){
   const dialog = document.getElementById("screen-lightbox");
   const image = dialog.querySelector("img");
   const refresh = () => { if (hasGSAP && typeof ScrollTrigger !== "undefined") requestAnimationFrame(() => ScrollTrigger.refresh()); };
+  const mobile = matchMedia("(max-width:860px)");
+  let selected = "timeline";
+  const displayScenes = () => { scenes.forEach(scene => { scene.hidden = !mobile.matches && scene.id !== "scene-" + selected; }); refresh(); };
+  mobile.addEventListener("change", displayScenes);
+  displayScenes();
   buttons.forEach(button => button.addEventListener("click", () => {
     const active = button.dataset.sceneTarget;
+    selected = active;
     buttons.forEach(item => item.setAttribute("aria-pressed", String(item === button)));
-    scenes.forEach(scene => { scene.hidden = scene.id !== "scene-" + active; });
+    displayScenes();
     refresh();
   }));
   document.querySelectorAll("[data-screen]").forEach(button => button.addEventListener("click", () => {
     const source = button.querySelector("img");
-    image.src = source.src; image.alt = source.alt;
+    image.src = source.currentSrc || source.src; image.alt = source.alt;
     image.width = source.naturalWidth || source.width; image.height = source.naturalHeight || source.height;
     dialog.showModal();
   }));

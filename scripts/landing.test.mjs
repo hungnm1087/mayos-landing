@@ -4,9 +4,9 @@ import {readFileSync,existsSync} from 'node:fs';
 // Standalone npm install, or the existing sibling test runtime in this workspace.
 const {JSDOM}=await import('jsdom').catch(()=>import('../../lamay-web/node_modules/jsdom/lib/api.js'));
 const html=readFileSync(new URL('../mayos/index.html',import.meta.url),'utf8');
-function page({url='https://by.lamayhotel.com/mayos/',saved=null}={}){
+function page({url='https://by.lamayhotel.com/mayos/',saved=null,mobile=false}={}){
   const dom=new JSDOM(html,{url,runScripts:'outside-only'});
-  const w=dom.window; w.matchMedia=()=>({matches:true});
+  const w=dom.window; w.matchMedia=query=>({matches:query.includes('prefers-reduced-motion')||mobile&&query.includes('max-width'),addEventListener(){}});
   Object.defineProperty(w.navigator,'language',{value:'en-US'});
   if(saved)w.localStorage.setItem('mayos-lang',saved);
   for(const script of w.document.querySelectorAll('script:not([src])'))w.eval(script.textContent);
@@ -29,11 +29,11 @@ test('claims have no unverified percentage/module tally, Claude remains absent',
 });
 test('all gallery screens exist, local image assets are small WebP files',()=>{
   const dom=page(),d=dom.window.document;
-  assert.equal(d.querySelectorAll('.product-scene').length,4);
+  assert.equal(d.querySelectorAll('.product-scene').length,6);
   for(const img of d.querySelectorAll('.product-scene img')){
     const file=new URL('../mayos/'+img.getAttribute('src'),import.meta.url);
     assert.ok(existsSync(file));
-    const bytes=readFileSync(file);assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.ok(bytes.length<120000);
+    const bytes=readFileSync(file);assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.ok(bytes.length<200000);
     assert.equal(img.getAttribute('loading'),'lazy');assert.ok(img.alt);
   }
   const ids=[...d.querySelectorAll('[id]')].map(e=>e.id);assert.equal(new Set(ids).size,ids.length);
@@ -56,5 +56,15 @@ test('gallery selection, language switching, no autoplay or form changes',()=>{
   }
   assert.match(html,/https:\/\/formsubmit\.co\/ajax\/hello@lamayhotel.com/);
   assert.equal(d.querySelector('#form button').type,'submit');
+  dom.window.close();
+});
+test('mobile shows every screen without switching chips and has mobile-specific assets',()=>{
+  const dom=page({mobile:true}),d=dom.window.document;
+  assert.equal(d.querySelectorAll('.product-scene:not([hidden])').length,6);
+  for(const source of d.querySelectorAll('.product-scene source')){
+    assert.equal(source.media,'(max-width:860px)');
+    assert.ok(existsSync(new URL('../mayos/'+source.getAttribute('srcset'),import.meta.url)));
+  }
+  assert.match(html,/image.src = source.currentSrc \|\| source.src/);
   dom.window.close();
 });

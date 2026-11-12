@@ -6,9 +6,13 @@ import autoprefixer from 'autoprefixer';
 import theme from '../../../opslamay-visa-compact/tailwind.config';
 const ops=path.resolve(__dirname,'../../../opslamay-visa-compact');
 export default defineConfig({
- root:__dirname,plugins:[react()],css:{postcss:{plugins:[tailwindcss({...theme,content:[path.join(ops,'src/**/*.{ts,tsx}'),path.join(__dirname,'*.tsx')]}),autoprefixer()]}},
+ root:__dirname,plugins:[{name:'offline-layout-widgets',enforce:'pre',resolveId(source){if(['./NotificationCenter','./AppVersionMenuInfo'].includes(source))return path.join(__dirname,'inert.tsx');if(source==='./MainLayout')return path.join(__dirname,'layout.tsx');}},react()],css:{postcss:{plugins:[tailwindcss({...theme,content:[path.join(ops,'src/**/*.{ts,tsx}'),path.join(__dirname,'*.tsx')]}),autoprefixer()]}},
  resolve:{dedupe:['react','react-dom'],alias:[
   {find:'@/hooks/usePnl',replacement:path.join(__dirname,'fixtures.tsx')},
+  {find:'@/hooks/useHousekeepingTasks',replacement:path.join(__dirname,'housekeeping.ts')},
+  {find:'@/contexts/FeedbackContext',replacement:path.join(__dirname,'fixtures.tsx')},
+  {find:'@/hooks/useActivityLog',replacement:path.join(__dirname,'fixtures.tsx')},
+  ...['@/components/layout/NotificationCenter','@/components/layout/AppVersionMenuInfo','@/components/ca-truc/NutCaTruc'].map(find=>({find,replacement:path.join(__dirname,'inert.tsx')})),
   {find:'@/hooks/useQcRun',replacement:path.join(__dirname,'qc.ts')},
   {find:'@/contexts/AuthContext',replacement:path.join(__dirname,'fixtures.tsx')},
   {find:'@/contexts/HotelContext',replacement:path.join(__dirname,'fixtures.tsx')},
