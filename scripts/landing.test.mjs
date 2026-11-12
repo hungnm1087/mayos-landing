@@ -68,3 +68,16 @@ test('mobile shows every screen without switching chips and has mobile-specific 
   assert.match(html,/image.src = source.currentSrc \|\| source.src/);
   dom.window.close();
 });
+test('iPhone frames reserve real display safe areas above and below the app',()=>{
+  const dom=page(),d=dom.window.document;
+  const frames=d.querySelectorAll('.screen-zoom.iphone,.screen-zoom.responsive-device');
+  assert.equal(frames.length,6);
+  for(const frame of frames){
+    const display=frame.querySelector('.phone-display');
+    assert.deepEqual([...display.children].map(x=>x.className||x.tagName),['phone-status',frame.querySelector('picture')?'PICTURE':'IMG','phone-home']);
+    assert.equal(display.querySelector('.phone-status').getAttribute('aria-hidden'),'true');
+    assert.equal(display.querySelector('.phone-home').getAttribute('aria-hidden'),'true');
+    assert.ok(display.querySelector('.phone-status svg'));
+  }
+  dom.window.close();
+});
