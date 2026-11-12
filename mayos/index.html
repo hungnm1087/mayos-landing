@@ -66,6 +66,8 @@ h1,h2,h3{font-family:var(--serif);font-weight:400;letter-spacing:-.025em;line-he
 h2{font-size:clamp(34px,5.2vw,68px);max-width:20ch}
 h2,h3,h4{text-wrap:balance}
 h2 em{white-space:nowrap}
+.day h2 em{white-space:normal}
+#finance{scroll-margin-top:100px}
 .lede,p{text-wrap:pretty}
 h2 em,h1 em{font-style:italic;color:var(--amber)}
 .lede{font-size:clamp(17px,1.5vw,20px);color:var(--mist);max-width:56ch;margin-top:24px}
@@ -88,6 +90,7 @@ h2 em,h1 em{font-style:italic;color:var(--amber)}
 .proof div+div{padding-left:20px;border-left:1px solid var(--line)}
 .proof b{display:block;font-family:var(--serif);font-weight:400;font-size:clamp(30px,3.6vw,48px);letter-spacing:-.02em;line-height:1}
 .proof div>span{display:block;margin-top:8px;font-size:13px;color:var(--mist)}
+.proof b.proof-label{font-family:var(--sans);font-size:clamp(20px,2.2vw,30px);font-weight:500;line-height:1.3;letter-spacing:-.02em}
 @media(max-width:720px){.proof{grid-template-columns:1fr 1fr}.proof div{padding:18px 12px 18px 0}.proof div:nth-child(3){border-left:0;padding-left:0}.proof div:nth-child(n+3){border-top:1px solid var(--line)}}
 
 /* ---------- sandbox ---------- */
@@ -117,6 +120,38 @@ h2 em,h1 em{font-style:italic;color:var(--amber)}
 .card .feature-link{color:var(--amber-2);text-decoration:underline;text-underline-offset:.24em}
 .card .feature-link:hover{color:var(--cream)}
 @media(max-width:980px){.products .grid{grid-template-columns:1fr}}
+
+/* ---------- product screens ---------- */
+[hidden]{display:none!important}
+.showcase{padding-top:clamp(50px,7vw,96px)}
+.showcase-head{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:end}
+.showcase-head .lede{margin:0}
+.scene-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:36px 0 24px}
+.scene-tabs button{font:400 14px var(--sans);color:var(--mist);background:var(--ink-2);border:1px solid var(--line-2);padding:11px 18px;min-height:44px;border-radius:999px;cursor:pointer}
+.scene-tabs button[aria-pressed="true"]{color:var(--ink);background:var(--cream);border-color:var(--cream)}
+.scene-tabs button:focus-visible,.screen-zoom:focus-visible,.lightbox-close:focus-visible{outline:2px solid var(--amber);outline-offset:5px}
+.product-scene{margin:0;display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);border:1px solid var(--line);border-radius:24px;overflow:hidden;background:rgba(16,21,28,.95)}
+.device-stage{min-width:0;min-height:520px;padding:56px 36px;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 85%,rgba(240,164,91,.16),transparent 65%),linear-gradient(145deg,#20272e,#0b1016)}
+.screen-zoom{display:block;position:relative;max-width:100%;padding:0;color:inherit;background:none;border:0;cursor:zoom-in}
+.macbook{width:100%;padding:11px 10px 14px;border-radius:15px 15px 5px 5px;background:linear-gradient(135deg,#777d84,#272b31 40%,#11151b);border:1px solid #8b9096;box-shadow:0 28px 48px #0008}
+.macbook::before{content:"";position:absolute;top:4px;left:50%;width:4px;height:4px;border-radius:50%;background:#080a0d}
+.macbook::after{content:"";position:absolute;left:-4%;right:-4%;bottom:-10px;height:11px;border-radius:1px 1px 65% 65%/1px 1px 100% 100%;background:linear-gradient(#c4c8cd,#777e87 60%,#454d56);box-shadow:0 8px 15px #0005}
+.macbook img{display:block;width:100%;height:auto;aspect-ratio:1440/920;object-fit:cover;object-position:top;border-radius:5px;background:#fff}
+.iphone{width:240px;padding:28px 9px 12px;border:1px solid #899096;border-radius:39px;background:linear-gradient(135deg,#656a6e,#111417 40%,#42484c);box-shadow:0 25px 55px #0009}
+.iphone::before{content:"";position:absolute;z-index:1;left:50%;top:8px;transform:translateX(-50%);width:60px;height:12px;border-radius:20px;background:#101215}
+.iphone img{display:block;width:100%;height:auto;aspect-ratio:390/844;object-fit:cover;object-position:top;border-radius:30px;background:#f5f6f4}
+.scene-copy{padding:36px;align-self:center}
+.scene-copy .scene-index{font:11px var(--mono);letter-spacing:.12em;color:var(--amber)}
+.scene-copy h3{font-size:clamp(28px,3vw,40px);margin:20px 0}
+.scene-copy p{font-size:15px;color:var(--mist)}
+.scene-copy .scene-note{font-size:12px;line-height:1.6;color:var(--dim);margin-top:22px}
+.scene-copy .scene-hint{font-size:12px;color:var(--amber-2);margin-top:18px}
+.screen-lightbox{position:fixed;inset:0;margin:auto;width:min(95vw,1500px);max-height:94dvh;padding:52px 16px 16px;background:var(--ink-2);color:var(--cream);border:1px solid var(--line-2);border-radius:18px}
+.screen-lightbox::backdrop{background:rgba(4,7,10,.9);backdrop-filter:blur(8px)}
+.screen-lightbox img{display:block;max-width:100%;max-height:76dvh;width:auto;height:auto;margin:auto;object-fit:contain}
+.screen-lightbox p{font:12px var(--sans);text-align:center;margin:12px 0 0;color:var(--mist)}
+.lightbox-close{position:absolute;right:12px;top:8px;background:transparent;border:0;color:var(--cream);font-size:28px;width:40px;height:40px;cursor:pointer}
+@media(max-width:860px){.showcase-head{grid-template-columns:1fr}.product-scene{grid-template-columns:1fr}.device-stage{min-height:0;padding:40px 26px}.scene-copy{padding:28px}.iphone{width:230px}.scene-copy h3{margin:14px 0}.scene-tabs{gap:7px}.scene-tabs button{padding:10px 14px;font-size:13px}}
 
 /* ---------- day (horizontal) ---------- */
 .day{padding-left:0;padding-right:0;overflow:hidden}
@@ -247,10 +282,10 @@ footer .legal{flex-basis:100%;font-size:12.5px;line-height:1.6}
       <a class="btn magnetic" href="#products">Xem bộ giải pháp</a>
     </div>
     <div class="proof">
-      <div data-hero><b><span data-count="3">3</span></b><span>sản phẩm đang chạy production</span></div>
-      <div data-hero><b><span data-count="14">14</span></b><span>module vận hành đã sẵn sàng</span></div>
-      <div data-hero><b><span data-count="67">67</span>%</b><span>booking trực tiếp tại La May</span></div>
-      <div data-hero><b>24/7</b><span>dùng thật bởi đội ngũ khách sạn</span></div>
+      <div data-hero><b><span data-count="3">3</span></b><span>nền tảng kết nối: Ops · Stay · Direct</span></div>
+      <div data-hero><b class="proof-label">Booking.com + Agoda</b><span>đồng bộ tồn phòng trực tiếp</span></div>
+      <div data-hero><b>24/7</b><span>Lammy tiếp nhận &amp; tư vấn khách</span></div>
+      <div data-hero><b class="proof-label">La May</b><span>xây từ vận hành thực tế</span></div>
     </div>
   </div>
 </section>
@@ -264,7 +299,7 @@ footer .legal{flex-basis:100%;font-size:12.5px;line-height:1.6}
     </div>
     <ul>
       <li data-reveal><i>01</i><div><b>Thiết kế cho người đang bận</b><span>Khách đang đứng chờ ở quầy. Mọi thao tác chính phải xong trong vài giây, trên điện thoại, bằng một tay.</span></div></li>
-      <li data-reveal><i>02</i><div><b>Sai về tiền là không chấp nhận được</b><span>Folio, đặt cọc, thanh toán theo ca được đối soát tự động — không đếm trùng, không sót.</span></div></li>
+      <li data-reveal><i>02</i><div><b>Tiền cần được đối chiếu rõ ràng</b><span>Folio, đặt cọc và các khoản thu theo ca nằm trong cùng luồng đối soát, giúp hạn chế ghi sót hoặc ghi trùng.</span></div></li>
       <li data-reveal><i>03</i><div><b>Chủ khách sạn không cần có mặt</b><span>Bàn giao ca, sự cố, chất lượng phòng tự tổng kết và gửi về điện thoại của bạn.</span></div></li>
     </ul>
   </div>
@@ -273,13 +308,13 @@ footer .legal{flex-basis:100%;font-size:12.5px;line-height:1.6}
 <section class="products" id="products">
   <div class="wrap">
     <div class="eyebrow" data-reveal>Bộ giải pháp</div>
-    <h2 data-reveal>Ba sản phẩm, <em>một</em> dòng dữ liệu.</h2>
+    <h2 data-reveal>Ba nền tảng, <em>một</em> dòng dữ liệu.</h2>
     <div class="grid">
       <article class="card" data-card>
         <div class="top"><span class="num">01 / OPS</span><span class="tag live">Live</span></div>
         <h3>MayOS Ops</h3><div class="role">Cho đội ngũ vận hành</div>
         <p>Trung tâm điều hành khách sạn trên web và điện thoại: đặt phòng, tiền, con người và chất lượng trong cùng một nơi.</p>
-        <ul><li>Timeline đặt phòng, booking đoàn</li><li><a class="feature-link" href="#channel-manager">Đồng bộ Booking.com &amp; Agoda</a></li><li>Ca trực & bàn giao lễ tân</li><li>QC buồng phòng bằng hình ảnh</li><li>Sự cố, bảo trì có hạn xử lý</li></ul>
+        <ul><li>Timeline đặt phòng, booking đoàn</li><li><a class="feature-link" href="#channel-manager">Đồng bộ Booking.com &amp; Agoda</a></li><li>Ca trực & bàn giao lễ tân</li><li>QC buồng phòng bằng hình ảnh</li><li>Sự cố, bảo trì có hạn xử lý</li><li><a class="feature-link" href="#finance">Sổ chi &amp; báo cáo lãi/lỗ</a></li></ul>
       </article>
       <article class="card" data-card>
         <div class="top"><span class="num">02 / STAY</span><span class="tag live">Live</span></div>
@@ -297,18 +332,50 @@ footer .legal{flex-basis:100%;font-size:12.5px;line-height:1.6}
   </div>
 </section>
 
+<section class="showcase" id="screens" aria-labelledby="screens-title">
+  <div class="wrap">
+    <div class="showcase-head">
+      <div><div class="eyebrow">Bên trong MayOS</div><h2 id="screens-title">Công việc thật. <em>Giao diện thật.</em></h2></div>
+      <p class="lede">Từ lịch phòng trên máy tính đến checklist trên điện thoại. Chọn một góc nhìn để xem cách MayOS đồng hành cùng đội ngũ.</p>
+    </div>
+    <div class="scene-tabs" role="group" aria-label="Chọn màn hình / Choose a screen">
+      <button type="button" data-scene-target="timeline" aria-pressed="true" aria-controls="scene-timeline">Lịch phòng</button>
+      <button type="button" data-scene-target="qc" aria-pressed="false" aria-controls="scene-qc">QC buồng phòng</button>
+      <button type="button" data-scene-target="pnl" aria-pressed="false" aria-controls="scene-pnl">Chi phí &amp; PnL</button>
+      <button type="button" data-scene-target="chat" aria-pressed="false" aria-controls="scene-chat">Lammy 24/7</button>
+    </div>
+    <figure class="product-scene" id="scene-timeline">
+      <div class="device-stage"><button class="screen-zoom macbook" type="button" data-screen="timeline" aria-label="Phóng lớn / Enlarge: Timeline"><img src="./assets/timeline.webp" width="1440" height="920" loading="lazy" decoding="async" alt="Timeline đặt phòng MayOS với booking minh họa trên khung MacBook"></button></div>
+      <figcaption class="scene-copy"><span class="scene-index">01 / OPS · MACBOOK</span><h3>Một lịch phòng, cả đội cùng nắm.</h3><p>Nhìn booking theo phòng và ngày, phân biệt trạng thái bằng màu, kiểm tra lịch trước khi nhận thêm khách.</p><p class="scene-note">Ảnh từ component Ops thật, dùng tên và dữ liệu minh họa. Không phải số liệu kinh doanh của La May.</p><p class="scene-hint">Chạm vào màn hình để xem lớn</p></figcaption>
+    </figure>
+    <figure class="product-scene" id="scene-qc" hidden>
+      <div class="device-stage"><button class="screen-zoom iphone" type="button" data-screen="qc" aria-label="Phóng lớn / Enlarge: QC"><img src="./assets/qc.webp" width="390" height="844" loading="lazy" decoding="async" alt="Checklist QC buồng phòng MayOS trên khung iPhone"></button></div>
+      <figcaption class="scene-copy"><span class="scene-index">02 / OPS · IPHONE</span><h3>Đúng checklist, ngay tại phòng.</h3><p>Nhân viên chụp hiện trạng theo từng góc, ghi nhận vấn đề và hoàn tất lượt dọn trên điện thoại.</p><p class="scene-note">Giao diện QC thật với một lượt dọn minh họa. Không chụp hay sử dụng ảnh phòng đang có khách.</p><p class="scene-hint">Chạm vào màn hình để xem lớn</p></figcaption>
+    </figure>
+    <figure class="product-scene" id="scene-pnl" hidden>
+      <div class="device-stage"><button class="screen-zoom macbook" type="button" data-screen="pnl" aria-label="Phóng lớn / Enlarge: PnL"><img src="./assets/pnl.webp" width="1440" height="920" loading="lazy" decoding="async" alt="Báo cáo lãi lỗ MayOS với số liệu giả trên khung MacBook"></button></div>
+      <figcaption class="scene-copy"><span class="scene-index">03 / OPS · MACBOOK</span><h3>Biết doanh thu. Hiểu phần còn lại.</h3><p>Đọc lợi nhuận hoạt động cùng chi phí trọng yếu, công suất, ADR và RevPAR. Đi thẳng từ báo cáo sang Sổ chi khi cần bổ sung.</p><p class="scene-note">Tất cả số tiền trong ảnh là dữ liệu giả. Kết quả thực tế phụ thuộc dữ liệu đã ghi nhận và quy tắc phân bổ.</p><p class="scene-hint">Chạm vào màn hình để xem lớn</p></figcaption>
+    </figure>
+    <figure class="product-scene" id="scene-chat" hidden>
+      <div class="device-stage"><button class="screen-zoom iphone" type="button" data-screen="chat" aria-label="Phóng lớn / Enlarge: Lammy"><img src="./assets/chat.webp" width="390" height="844" loading="lazy" decoding="async" alt="Ví dụ hội thoại tư vấn Lammy trên khung iPhone, không phải cuộc trò chuyện thật"></button></div>
+      <figcaption class="scene-copy"><span class="scene-index">04 / LAMMY · IPHONE</span><h3>Một lời hỏi phòng, dù đã nửa đêm.</h3><p>Lammy tiếp nhận nhu cầu và tư vấn bước đặt phòng tiếp theo qua Zalo hoặc Facebook Messenger, kể cả ngoài giờ lễ tân.</p><p class="scene-note">Hội thoại minh họa, không phải tin nhắn khách thật hay ảnh chụp ứng dụng Zalo/Messenger.</p><p class="scene-hint">Chạm vào màn hình để xem lớn</p></figcaption>
+    </figure>
+  </div>
+</section>
+
 <section class="day" id="day">
   <div class="head">
     <div class="eyebrow" data-reveal>Một ngày trên MayOS</div>
-    <h2 data-reveal>Từ 7 giờ sáng đến <em>giao ca đêm</em>.</h2>
+    <h2 data-reveal>Từ ca sáng đến <em>lời hỏi phòng lúc nửa đêm</em>.</h2>
   </div>
   <div class="day-track">
     <article class="moment"><time>07:00</time><div class="who">Lễ tân · Nhận ca</div><h3>Bấm “Nhận ca”, việc hiện ra</h3><p>Checklist đầu ca, lời nhắn của ca trước và các việc còn dở xuất hiện ngay — không cần sổ giao ca.</p></article>
     <article class="moment"><time>09:30</time><div class="who">Buồng phòng · QC</div><h3>Chụp ảnh, phòng đạt chuẩn</h3><p>Checklist bằng ảnh cho từng phòng. Camera tự chọn khung nét nhất, quản lý duyệt từ xa.</p></article>
     <article class="moment"><time>11:15</time><div class="who">Kỹ thuật · Sự cố</div><h3>Sự cố tự có hạn xử lý</h3><p>Báo hỏng từ điện thoại, hệ thống đặt hạn theo mức ảnh hưởng: 4 giờ, 24 giờ, 72 giờ hoặc 7 ngày.</p></article>
-    <article class="moment"><time>14:00</time><div class="who">Lễ tân · Check-in</div><h3>Một chạm trên timeline</h3><p>Bấm ô trống để tạo booking, khách đoàn gộp chung một folio, đặt cọc và thanh toán ghi nhận tức thì.</p></article>
+    <article class="moment"><time>14:00</time><div class="who">Lễ tân · Check-in</div><h3>Sẵn sàng đón khách</h3><p>Mở booking, đối chiếu đặt cọc, khai báo khách lưu trú và nhận phòng. Thông tin được giữ cùng kỳ lưu trú.</p></article>
     <article class="moment"><time>16:30</time><div class="who">Khách · Stay</div><h3>Khách tự khám phá</h3><p>Khách mở Stay để xem menu, tiện ích, gợi ý điểm đến — và thuê xe máy theo gói nửa ngày, ngày hay qua đêm.</p></article>
     <article class="moment"><time>22:00</time><div class="who">Chủ khách sạn · Telegram</div><h3>Giao ca, bạn nhận tổng kết</h3><p>Ca đóng lại, bản tổng kết việc đã làm và việc tồn tự gửi về Telegram của quản lý và chủ đầu tư.</p></article>
+    <article class="moment"><time>23:47</time><div class="who">Khách hàng · Lammy</div><h3>Khách vẫn hỏi. Lammy vẫn ở đây.</h3><p>Một tin nhắn hỏi phòng cuối tuần qua Zalo hoặc Messenger. Lammy tiếp tục tiếp nhận và tư vấn, dù đội ngũ đã kết ca.</p></article>
   </div>
   <div class="day-bar"><i></i></div>
 </section>
@@ -346,8 +413,9 @@ footer .legal{flex-basis:100%;font-size:12.5px;line-height:1.6}
     </div>
     <div class="mods">
       <div class="mod"><span class="tag live">Live</span><h4>Timeline đặt phòng</h4><p>Nhìn toàn bộ phòng theo ngày, tạo booking bằng một chạm vào ô trống.</p></div>
-      <div class="mod"><span class="tag live">Live</span><h4>Booking đoàn & master folio</h4><p>Nhiều phòng, một hoá đơn tổng, tính tiền chính xác theo thời gian thực.</p></div>
-      <div class="mod"><span class="tag live">Live</span><h4>Thanh toán & đặt cọc</h4><p>Ghi nhận từng khoản thu, đối soát với tổng booking, không đếm trùng.</p></div>
+      <div class="mod"><span class="tag live">Live</span><h4>Booking đoàn & master folio</h4><p>Nhiều phòng trong một hồ sơ đoàn; tổng hợp các khoản thu, dịch vụ và số tiền còn lại.</p></div>
+      <div class="mod" id="finance"><span class="tag live">Live</span><h4>Sổ chi &amp; báo cáo lãi/lỗ</h4><p>Ghi chi theo kỳ sử dụng, theo dõi chi phí trọng yếu và lợi nhuận hoạt động cùng công suất, ADR, RevPAR.</p></div>
+      <div class="mod"><span class="tag live">Live</span><h4>Thanh toán & đặt cọc</h4><p>Ghi nhận từng khoản thu, đối chiếu tổng booking và theo dõi số tiền còn lại.</p></div>
       <div class="mod"><span class="tag live">Live</span><h4>Ca trực & bàn giao</h4><p>Nhận ca, giao ca, checklist việc theo ca và lời nhắn cho người kế tiếp.</p></div>
       <div class="mod"><span class="tag live">Live</span><h4>QC buồng phòng</h4><p>Checklist ảnh, có/không, số đo và việc cần làm — theo phòng hoặc theo ca.</p></div>
       <div class="mod"><span class="tag live">Live</span><h4>Sự cố & bảo trì</h4><p>5 trạng thái xử lý, hạn tự động theo mức ảnh hưởng, phân quyền rõ ràng.</p></div>
@@ -359,7 +427,7 @@ footer .legal{flex-basis:100%;font-size:12.5px;line-height:1.6}
       <div class="mod"><span class="tag live">Live</span><h4>Phân quyền theo vai trò</h4><p>Lễ tân, buồng phòng, kỹ thuật, quản lý — mỗi người thấy đúng việc của mình.</p></div>
 
       <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Revenue AI</h4><p>Gợi ý giá theo mùa, công suất và nhu cầu thị trường.</p></div>
-      <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Owner & Investor Dashboard</h4><p>Doanh thu, công suất, ADR, RevPAR minh bạch cho chủ đầu tư.</p></div>
+      <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Không gian riêng cho nhà đầu tư</h4><p>Báo cáo chia sẻ theo quyền dành cho nhà đầu tư; tách biệt với báo cáo vận hành và PnL đã có trong Ops.</p></div>
       <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Quản lý đa cơ sở</h4><p>Một tài khoản, nhiều khách sạn, chuẩn vận hành thống nhất.</p></div>
       <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Self check-in & khoá thông minh</h4><p>Khách tự nhận phòng, mã mở cửa cấp theo booking.</p></div>
       <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Hoá đơn điện tử & kế toán</h4><p>Xuất hoá đơn và đẩy số liệu sang phần mềm kế toán.</p></div>
@@ -432,6 +500,11 @@ footer .legal{flex-basis:100%;font-size:12.5px;line-height:1.6}
   </div>
 </section>
 </main>
+<dialog class="screen-lightbox" id="screen-lightbox" aria-label="Màn hình minh họa / Illustrative screen">
+  <button class="lightbox-close" type="button" aria-label="Đóng / Close">×</button>
+  <img alt="" width="1440" height="920">
+  <p>Giao diện tiếng Việt · Dữ liệu minh họa</p>
+</dialog>
 
 <footer>
   <span>© 2026 MayOS by La May Hotel · Est. 2025</span>
@@ -455,11 +528,49 @@ const state = { p: 0, mx: 0, my: 0 };   // p: 0 mây → 1 khách sạn → 2 m�
 
 /* ---------------- Song ngữ Việt – Anh ---------------- */
 const EN = {
+"Ghi nhận từng khoản thu, đối chiếu tổng booking và theo dõi số tiền còn lại.":"Record each payment, reconcile it against the booking total and track the remaining balance.",
+"nền tảng kết nối: Ops · Stay · Direct":"connected platforms: Ops · Stay · Direct",
+"đồng bộ tồn phòng trực tiếp":"direct room-inventory sync",
+"Lammy tiếp nhận & tư vấn khách":"Lammy handles enquiries & booking advice",
+"xây từ vận hành thực tế":"built from real hotel operations",
+"Tiền cần được đối chiếu rõ ràng":"Every payment needs a clear trail",
+"Folio, đặt cọc và các khoản thu theo ca nằm trong cùng luồng đối soát, giúp hạn chế ghi sót hoặc ghi trùng.":"Folios, deposits and shift payments follow one reconciliation flow, helping reduce missed or duplicate entries.",
+"Ba nền tảng, một dòng dữ liệu.":"Three platforms, <em>one</em> stream of data.",
+"Sổ chi & báo cáo lãi/lỗ":"Expense ledger & P&L",
+"Bên trong MayOS":"Inside MayOS",
+"Công việc thật. Giao diện thật.":"Real work. <em>Real interfaces.</em>",
+"Từ lịch phòng trên máy tính đến checklist trên điện thoại. Chọn một góc nhìn để xem cách MayOS đồng hành cùng đội ngũ.":"From a room calendar on a laptop to a checklist on a phone. Choose a view to see MayOS alongside the team.",
+"Lịch phòng":"Room calendar",
+"Chi phí & PnL":"Expenses & P&L",
+"Lammy 24/7":"Lammy 24/7",
+"Một lịch phòng, cả đội cùng nắm.":"One calendar. Everyone in the loop.",
+"Nhìn booking theo phòng và ngày, phân biệt trạng thái bằng màu, kiểm tra lịch trước khi nhận thêm khách.":"See bookings by room and date, distinguish statuses by colour, and check availability before taking another reservation.",
+"Ảnh từ component Ops thật, dùng tên và dữ liệu minh họa. Không phải số liệu kinh doanh của La May.":"Captured from real Ops components with illustrative names and data. These are not La May’s business figures.",
+"Chạm vào màn hình để xem lớn":"Tap the screen to enlarge",
+"Đúng checklist, ngay tại phòng.":"The right checklist. Right in the room.",
+"Nhân viên chụp hiện trạng theo từng góc, ghi nhận vấn đề và hoàn tất lượt dọn trên điện thoại.":"Staff photograph each checklist view, record issues and complete the cleaning session on their phone.",
+"Giao diện QC thật với một lượt dọn minh họa. Không chụp hay sử dụng ảnh phòng đang có khách.":"The real QC interface with an illustrative session. No occupied-room photos are used.",
+"Biết doanh thu. Hiểu phần còn lại.":"Know revenue. Understand what remains.",
+"Đọc lợi nhuận hoạt động cùng chi phí trọng yếu, công suất, ADR và RevPAR. Đi thẳng từ báo cáo sang Sổ chi khi cần bổ sung.":"Read operating profit alongside key costs, occupancy, ADR and RevPAR. Go straight to the expense ledger when a cost needs adding.",
+"Tất cả số tiền trong ảnh là dữ liệu giả. Kết quả thực tế phụ thuộc dữ liệu đã ghi nhận và quy tắc phân bổ.":"All amounts shown are fictional. Actual results depend on recorded data and allocation rules.",
+"Một lời hỏi phòng, dù đã nửa đêm.":"A room enquiry. Even at midnight.",
+"Lammy tiếp nhận nhu cầu và tư vấn bước đặt phòng tiếp theo qua Zalo hoặc Facebook Messenger, kể cả ngoài giờ lễ tân.":"Lammy takes enquiries and guides the next booking step on Zalo or Facebook Messenger, even outside front-desk hours.",
+"Hội thoại minh họa, không phải tin nhắn khách thật hay ảnh chụp ứng dụng Zalo/Messenger.":"An illustrative conversation, not real guest messages or a screenshot of Zalo/Messenger.",
+"Từ ca sáng đến lời hỏi phòng lúc nửa đêm.":"From the morning shift to <em>a midnight enquiry</em>.",
+"Sẵn sàng đón khách":"Ready to welcome your guests",
+"Mở booking, đối chiếu đặt cọc, khai báo khách lưu trú và nhận phòng. Thông tin được giữ cùng kỳ lưu trú.":"Open the booking, check the deposit, record staying guests and check them in. Keep the details with their stay.",
+"Khách hàng · Lammy":"Guest · Lammy",
+"Khách vẫn hỏi. Lammy vẫn ở đây.":"Guests are still asking. Lammy is still here.",
+"Một tin nhắn hỏi phòng cuối tuần qua Zalo hoặc Messenger. Lammy tiếp tục tiếp nhận và tư vấn, dù đội ngũ đã kết ca.":"A message about a weekend room on Zalo or Messenger. Lammy keeps taking enquiries and offering advice after the team’s shift ends.",
+"Nhiều phòng trong một hồ sơ đoàn; tổng hợp các khoản thu, dịch vụ và số tiền còn lại.":"Multiple rooms in one group record, with payments, services and remaining balances brought together.",
+"Ghi chi theo kỳ sử dụng, theo dõi chi phí trọng yếu và lợi nhuận hoạt động cùng công suất, ADR, RevPAR.":"Record expenses by service period and track key costs and operating profit alongside occupancy, ADR and RevPAR.",
+"Không gian riêng cho nhà đầu tư":"Dedicated investor workspace",
+"Báo cáo chia sẻ theo quyền dành cho nhà đầu tư; tách biệt với báo cáo vận hành và PnL đã có trong Ops.":"Permission-based reporting for investors, separate from the operating reports and P&L already available in Ops.",
+"Giao diện tiếng Việt · Dữ liệu minh họa":"Vietnamese interface · Illustrative data",
 "Sản phẩm":"Products","Module":"Modules","Hợp tác":"Partnership","Đề xuất hợp tác":"Partner with us",
 "Khách sạn":"Hotels that","vận hành nhẹ":"run <em>light</em>","như mây.":"as a cloud.",
 "MayOS là bộ công nghệ vận hành lưu trú được xây từ bên trong một khách sạn thật — và chạy thật mỗi ngày tại La May Hotel. Từ lễ tân, buồng phòng, bảo trì đến trải nghiệm của khách: một hệ thống, một nguồn sự thật.":"MayOS is a hospitality operations stack built from inside a real hotel — and run for real, every day, at La May Hotel. Front desk, housekeeping, maintenance and the guest experience: one system, one source of truth.",
 "Xem bộ giải pháp":"See the product suite",
-"sản phẩm đang chạy production":"products running in production","module vận hành đã sẵn sàng":"operations modules ready today","booking trực tiếp tại La May":"direct bookings at La May","dùng thật bởi đội ngũ khách sạn":"used daily by a real hotel team",
 "Sandbox là một khách sạn thật":"The sandbox is a real hotel",
 "Không phải bản demo. Là ca trực sáng nay.":"Not a demo. It’s <em>this morning’s shift</em>.",
 "Mọi tính năng của MayOS đều bắt đầu từ một vấn đề có thật ở quầy lễ tân hay trên hành lang La May — và chỉ được giữ lại khi nhân viên thật sự dùng nó. Bạn không mua một lời hứa; bạn nhận một hệ thống đã trả giá cho từng bài học vận hành.":"Every MayOS feature starts with a real problem at the La May front desk or in its corridors — and survives only if staff actually use it. You are not buying a promise; you are getting a system that has already paid for every operational lesson.",
@@ -558,7 +669,7 @@ const T = {
        ph:"A few lines about your asset, location and what you are looking for…", preview:"Preview build: the form is not connected to a recipient yet, so nothing will be sent.",
        sending:"Sending…", send:"Send partnership proposal", fail:"Could not send. Please try again in a few minutes." }
 };
-const I18N_SEL = ".nav nav a,.nav .btn,.eyebrow,.hero .line>span,.lede,.btn .t,.hero-cta .btn:not(.primary),.proof div>span,h2,.sandbox li b,.sandbox li div>span,.card .role,.card p,.card li,.feature-link,.feature-card h3,.feature-detail summary,.tag,.moment .who,.moment h3,.moment p,.mod h4,.mod p,.prow h3,.prow p,.prow li,.step h4,.step p,legend,.chips span,.f>label,option,form button,.note,.done h3,.done p,footer .legal";
+const I18N_SEL = ".nav nav a,.nav .btn,.eyebrow,.hero .line>span,.lede,.btn .t,.hero-cta .btn:not(.primary),.proof div>span,h2,.sandbox li b,.sandbox li div>span,.card .role,.card p,.card li,.feature-link,.feature-card h3,.feature-detail summary,.tag,.moment .who,.moment h3,.moment p,.mod h4,.mod p,.prow h3,.prow p,.prow li,.step h4,.step p,legend,.chips span,.f>label,option,form button,.note,.done h3,.done p,footer .legal,.scene-tabs button,.scene-copy h3,.scene-copy p,.screen-lightbox p";
 let LANG = "vi";
 function setLang(l){
   LANG = l === "en" ? "en" : "vi";
@@ -582,7 +693,7 @@ function setLang(l){
 (function initLang(){
   let l = new URLSearchParams(location.search).get("lang");
   if (!l){ try { l = localStorage.getItem("mayos-lang"); } catch(e){} }
-  if (!l) l = (navigator.language || "vi").toLowerCase().startsWith("vi") ? "vi" : "en";
+  if (!l) l = "vi";
   setLang(l);
   document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
 })();
@@ -765,6 +876,29 @@ function setLang(l){
 })();
 
 /* ---------------- Liên kết & form ---------------- */
+(function initScreens(){
+  const scenes = document.querySelectorAll(".product-scene");
+  const buttons = document.querySelectorAll("[data-scene-target]");
+  const dialog = document.getElementById("screen-lightbox");
+  const image = dialog.querySelector("img");
+  const refresh = () => { if (hasGSAP && typeof ScrollTrigger !== "undefined") requestAnimationFrame(() => ScrollTrigger.refresh()); };
+  buttons.forEach(button => button.addEventListener("click", () => {
+    const active = button.dataset.sceneTarget;
+    buttons.forEach(item => item.setAttribute("aria-pressed", String(item === button)));
+    scenes.forEach(scene => { scene.hidden = scene.id !== "scene-" + active; });
+    refresh();
+  }));
+  document.querySelectorAll("[data-screen]").forEach(button => button.addEventListener("click", () => {
+    const source = button.querySelector("img");
+    image.src = source.src; image.alt = source.alt;
+    image.width = source.naturalWidth || source.width; image.height = source.naturalHeight || source.height;
+    dialog.showModal();
+  }));
+  dialog.querySelector("button").addEventListener("click", () => dialog.close());
+  dialog.addEventListener("click", event => { if (event.target === dialog) { const r=dialog.getBoundingClientRect(); if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom) dialog.close(); } });
+  dialog.addEventListener("close", () => image.removeAttribute("src"));
+  document.querySelectorAll(".product-scene img").forEach(img => img.addEventListener("load", refresh));
+})();
 document.querySelectorAll(".feature-detail").forEach(detail => detail.addEventListener("toggle", () => {
   if (hasGSAP && !REDUCED && typeof ScrollTrigger !== "undefined") requestAnimationFrame(() => ScrollTrigger.refresh());
 }));
