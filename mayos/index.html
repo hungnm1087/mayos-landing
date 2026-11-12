@@ -116,6 +116,8 @@ h2 em,h1 em{font-style:italic;color:var(--amber)}
 .card li{display:flex;gap:10px}
 .card li::before{content:"→";color:var(--amber);flex:none}
 .card .top{display:flex;justify-content:space-between;align-items:center}
+.card .feature-link{color:var(--amber-2);text-decoration:underline;text-underline-offset:.24em}
+.card .feature-link:hover{color:var(--cream)}
 @media(max-width:980px){.products .grid{grid-template-columns:1fr}}
 
 /* ---------- day (horizontal) ---------- */
@@ -134,7 +136,20 @@ h2 em,h1 em{font-style:italic;color:var(--amber)}
 /* ---------- modules ---------- */
 .mod-head{display:flex;justify-content:space-between;align-items:flex-end;gap:32px;flex-wrap:wrap}
 .legend{display:flex;gap:10px}
-.mods{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:22px;overflow:hidden;margin-top:56px}
+.feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:56px}
+.feature-card{scroll-margin-top:92px;padding:clamp(22px,3vw,32px)}
+.feature-card h3{margin:22px 0 12px;font-size:clamp(27px,3vw,37px)}
+.feature-card p{margin:0}
+.feature-channels{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.feature-channels span{padding:4px 10px;border:1px solid var(--line-2);border-radius:999px;font:12px/1.5 var(--mono);color:var(--cream)}
+.feature-detail{margin-top:20px;border-top:1px solid var(--line)}
+.feature-detail summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;cursor:pointer;list-style:none;color:var(--amber-2);font-size:14px;font-weight:500}
+.feature-detail summary::-webkit-details-marker{display:none}
+.feature-detail summary::after{content:"";width:8px;height:8px;flex:none;margin-right:5px;border:solid currentColor;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+.feature-detail[open] summary::after{transform:rotate(225deg)}
+.feature-detail p{font-size:14px;padding:0 0 8px}
+.feature-detail summary:focus-visible,.feature-link:focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:4px}
+.mods{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:22px;overflow:hidden;margin-top:24px}
 .mod{background:rgba(12,16,22,.95);padding:26px 24px 28px;min-height:190px;display:flex;flex-direction:column;gap:10px;transition:background .3s}
 .mod:hover{background:rgba(23,30,40,.98)}
 .mod .tag{align-self:flex-start}
@@ -143,6 +158,7 @@ h2 em,h1 em{font-style:italic;color:var(--amber)}
 .mod.soon h4{color:var(--mist)}
 .mod.soon p{color:var(--dim)}
 @media(max-width:1080px){.mods{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.feature-grid{grid-template-columns:1fr;margin-top:32px}}
 @media(max-width:560px){.mods{grid-template-columns:1fr}.mod{min-height:0}}
 
 /* ---------- partners ---------- */
@@ -234,7 +250,7 @@ footer .legal{flex-basis:100%;font-size:12.5px;line-height:1.6}
     </div>
     <div class="proof">
       <div data-hero><b><span data-count="3">3</span></b><span>sản phẩm đang chạy production</span></div>
-      <div data-hero><b><span data-count="12">12</span></b><span>module vận hành đã sẵn sàng</span></div>
+      <div data-hero><b><span data-count="14">14</span></b><span>module vận hành đã sẵn sàng</span></div>
       <div data-hero><b><span data-count="67">67</span>%</b><span>booking trực tiếp tại La May</span></div>
       <div data-hero><b>24/7</b><span>dùng thật bởi đội ngũ khách sạn</span></div>
     </div>
@@ -265,7 +281,7 @@ footer .legal{flex-basis:100%;font-size:12.5px;line-height:1.6}
         <div class="top"><span class="num">01 / OPS</span><span class="tag live">Live</span></div>
         <h3>MayOS Ops</h3><div class="role">Cho đội ngũ vận hành</div>
         <p>Trung tâm điều hành khách sạn trên web và điện thoại: đặt phòng, tiền, con người và chất lượng trong cùng một nơi.</p>
-        <ul><li>Timeline đặt phòng, booking đoàn</li><li>Ca trực & bàn giao lễ tân</li><li>QC buồng phòng bằng hình ảnh</li><li>Sự cố, bảo trì có hạn xử lý</li></ul>
+        <ul><li>Timeline đặt phòng, booking đoàn</li><li><a class="feature-link" href="#channel-manager">Đồng bộ Booking.com &amp; Agoda</a></li><li>Ca trực & bàn giao lễ tân</li><li>QC buồng phòng bằng hình ảnh</li><li>Sự cố, bảo trì có hạn xử lý</li></ul>
       </article>
       <article class="card" data-card>
         <div class="top"><span class="num">02 / STAY</span><span class="tag live">Live</span></div>
@@ -277,7 +293,7 @@ footer .legal{flex-basis:100%;font-size:12.5px;line-height:1.6}
         <div class="top"><span class="num">03 / DIRECT</span><span class="tag live">Live</span></div>
         <h3>MayOS Direct</h3><div class="role">Cho kênh bán trực tiếp</div>
         <p>Website thương hiệu được thiết kế để khách đặt thẳng với khách sạn, giảm phụ thuộc vào OTA.</p>
-        <ul><li>Website thương hiệu tối ưu chuyển đổi</li><li>Nội dung, hình ảnh tự quản trị</li><li>Nền tảng cho booking trực tiếp</li><li>Kết nối dữ liệu với Ops</li></ul>
+        <ul><li>Website thương hiệu tối ưu chuyển đổi</li><li>Nội dung, hình ảnh tự quản trị</li><li>Nền tảng cho booking trực tiếp</li><li><a class="feature-link" href="#lammy">Lammy tư vấn đặt phòng 24/7</a></li><li>Kết nối dữ liệu với Ops</li></ul>
       </article>
     </div>
   </div>
@@ -308,6 +324,28 @@ footer .legal{flex-basis:100%;font-size:12.5px;line-height:1.6}
       </div>
       <div class="legend" data-reveal><span class="tag live">Đang vận hành</span><span class="tag soon">Coming soon</span></div>
     </div>
+    <div class="feature-grid">
+      <article class="card feature-card" id="channel-manager" aria-labelledby="channel-manager-title">
+        <div class="top"><span class="num">OPS / OTA</span><span class="tag live">Live</span></div>
+        <h3 id="channel-manager-title">Channel Manager tích hợp</h3>
+        <p>Đồng bộ tồn phòng trực tiếp giữa MayOS và các kênh OTA. Lễ tân không phải cập nhật số phòng trống ở từng nơi, giảm nguy cơ bán trùng phòng.</p>
+        <div class="feature-channels"><span>Booking.com</span><span>Agoda</span></div>
+        <details class="feature-detail">
+          <summary>Xem ví dụ đồng bộ phòng</summary>
+          <p>Khi phòng cuối cùng được đặt, MayOS cập nhật số phòng còn bán trên các kênh kết nối. Lễ tân theo dõi tình trạng phòng ngay trong Ops.</p>
+        </details>
+      </article>
+      <article class="card feature-card" id="lammy" aria-labelledby="lammy-title">
+        <div class="top"><span class="num">DIRECT / CHAT</span><span class="tag live">Live</span></div>
+        <h3 id="lammy-title">Lammy, trợ lý khách hàng 24/7</h3>
+        <p>Tư vấn chọn phòng, hướng dẫn đặt phòng và giải đáp câu hỏi về khách sạn qua Zalo và Facebook Messenger, kể cả ngoài giờ lễ tân.</p>
+        <div class="feature-channels"><span>Zalo</span><span>Facebook Messenger</span></div>
+        <details class="feature-detail">
+          <summary>Xem ví dụ tư vấn đặt phòng</summary>
+          <p>Khách nhắn hỏi phòng cho cuối tuần lúc nửa đêm. Lammy có thể hỏi thêm ngày ở, số khách và hướng dẫn bước đặt phòng tiếp theo ngay trong cuộc trò chuyện.</p>
+        </details>
+      </article>
+    </div>
     <div class="mods">
       <div class="mod"><span class="tag live">Live</span><h4>Timeline đặt phòng</h4><p>Nhìn toàn bộ phòng theo ngày, tạo booking bằng một chạm vào ô trống.</p></div>
       <div class="mod"><span class="tag live">Live</span><h4>Booking đoàn & master folio</h4><p>Nhiều phòng, một hoá đơn tổng, tính tiền chính xác theo thời gian thực.</p></div>
@@ -322,11 +360,9 @@ footer .legal{flex-basis:100%;font-size:12.5px;line-height:1.6}
       <div class="mod"><span class="tag live">Live</span><h4>App nhân viên (PWA)</h4><p>Cài lên điện thoại như app thật, dữ liệu cập nhật realtime giữa các máy.</p></div>
       <div class="mod"><span class="tag live">Live</span><h4>Phân quyền theo vai trò</h4><p>Lễ tân, buồng phòng, kỹ thuật, quản lý — mỗi người thấy đúng việc của mình.</p></div>
 
-      <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Channel Manager</h4><p>Đồng bộ tồn phòng và giá với các OTA, chống overbooking.</p></div>
       <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Revenue AI</h4><p>Gợi ý giá theo mùa, công suất và nhu cầu thị trường.</p></div>
       <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Owner & Investor Dashboard</h4><p>Doanh thu, công suất, ADR, RevPAR minh bạch cho chủ đầu tư.</p></div>
       <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Quản lý đa cơ sở</h4><p>Một tài khoản, nhiều khách sạn, chuẩn vận hành thống nhất.</p></div>
-      <div class="mod soon"><span class="tag soon">Coming soon</span><h4>AI Concierge</h4><p>Trợ lý đa ngôn ngữ trả lời khách 24/7 ngay trong Stay.</p></div>
       <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Self check-in & khoá thông minh</h4><p>Khách tự nhận phòng, mã mở cửa cấp theo booking.</p></div>
       <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Hoá đơn điện tử & kế toán</h4><p>Xuất hoá đơn và đẩy số liệu sang phần mềm kế toán.</p></div>
       <div class="mod soon"><span class="tag soon">Coming soon</span><h4>Năng lượng & IoT</h4><p>Theo dõi điện, nước theo phòng để tối ưu chi phí vận hành.</p></div>
@@ -338,7 +374,7 @@ footer .legal{flex-basis:100%;font-size:12.5px;line-height:1.6}
   <div class="wrap">
     <div class="eyebrow" data-reveal>AI-native</div>
     <h2 data-reveal>Một đội ngũ tinh gọn, xây cùng <em>Claude</em>.</h2>
-    <p class="lede" data-reveal>MayOS được phát triển với Claude của Anthropic làm cộng sự kỹ thuật — từ thiết kế quy trình, lập trình đến kiểm thử. Bước tiếp theo là đưa Claude vào chính sản phẩm, phục vụ khách lưu trú và chủ khách sạn.</p>
+    <p class="lede" data-reveal>MayOS được phát triển với Claude của Anthropic làm cộng sự kỹ thuật. Lammy đã hỗ trợ khách qua Zalo và Facebook Messenger; trợ lý ngay trong MayOS Stay là bước tiếp theo.</p>
     <div class="grid">
       <article class="card" data-reveal>
         <div class="top"><span class="num">AI / 01</span><span class="tag live">Live</span></div>
@@ -499,11 +535,19 @@ const EN = {
 "Website thương hiệu":"Brand website","Kênh bán trực tiếp của riêng khách sạn, nội dung tự quản trị.":"The hotel’s own direct sales channel, with self-managed content.",
 "App nhân viên (PWA)":"Staff app (PWA)","Cài lên điện thoại như app thật, dữ liệu cập nhật realtime giữa các máy.":"Installs on a phone like a native app, with data updating in real time across devices.",
 "Phân quyền theo vai trò":"Role-based access","Lễ tân, buồng phòng, kỹ thuật, quản lý — mỗi người thấy đúng việc của mình.":"Front desk, housekeeping, engineering, management — everyone sees exactly their own work.",
-"Đồng bộ tồn phòng và giá với các OTA, chống overbooking.":"Sync availability and rates with OTAs and prevent overbooking.",
+"Đồng bộ Booking.com & Agoda":"Sync Booking.com & Agoda",
+"Lammy tư vấn đặt phòng 24/7":"Lammy booking assistance, 24/7",
+"Channel Manager tích hợp":"Built-in Channel Manager",
+"Đồng bộ tồn phòng trực tiếp giữa MayOS và các kênh OTA. Lễ tân không phải cập nhật số phòng trống ở từng nơi, giảm nguy cơ bán trùng phòng.":"Sync room availability directly between MayOS and your OTAs. Front-desk staff don’t have to update each channel separately, reducing the risk of overbooking.",
+"Xem ví dụ đồng bộ phòng":"See an example of room sync",
+"Khi phòng cuối cùng được đặt, MayOS cập nhật số phòng còn bán trên các kênh kết nối. Lễ tân theo dõi tình trạng phòng ngay trong Ops.":"When the last room is booked, MayOS updates the remaining inventory on connected channels. Front-desk staff can track availability in Ops.",
+"Lammy, trợ lý khách hàng 24/7":"Lammy, your 24/7 guest assistant",
+"Tư vấn chọn phòng, hướng dẫn đặt phòng và giải đáp câu hỏi về khách sạn qua Zalo và Facebook Messenger, kể cả ngoài giờ lễ tân.":"Help guests choose a room, guide them through booking and answer hotel questions on Zalo and Facebook Messenger, even outside front-desk hours.",
+"Xem ví dụ tư vấn đặt phòng":"See an example of booking assistance",
+"Khách nhắn hỏi phòng cho cuối tuần lúc nửa đêm. Lammy có thể hỏi thêm ngày ở, số khách và hướng dẫn bước đặt phòng tiếp theo ngay trong cuộc trò chuyện.":"A guest messages at midnight about a weekend stay. Lammy can ask for dates and party size, then guide them to the next booking step in the same conversation.",
 "Gợi ý giá theo mùa, công suất và nhu cầu thị trường.":"Rate suggestions based on season, occupancy and market demand.",
 "Doanh thu, công suất, ADR, RevPAR minh bạch cho chủ đầu tư.":"Revenue, occupancy, ADR and RevPAR, transparent for owners and investors.",
 "Quản lý đa cơ sở":"Multi-property management","Một tài khoản, nhiều khách sạn, chuẩn vận hành thống nhất.":"One account, many hotels, one operating standard.",
-"Trợ lý đa ngôn ngữ trả lời khách 24/7 ngay trong Stay.":"A multilingual assistant answering guests 24/7, right inside Stay.",
 "Self check-in & khoá thông minh":"Self check-in & smart locks","Khách tự nhận phòng, mã mở cửa cấp theo booking.":"Guests check themselves in, with door codes issued per booking.",
 "Hoá đơn điện tử & kế toán":"E-invoicing & accounting","Xuất hoá đơn và đẩy số liệu sang phần mềm kế toán.":"Issue invoices and push figures to accounting software.",
 "Năng lượng & IoT":"Energy & IoT","Theo dõi điện, nước theo phòng để tối ưu chi phí vận hành.":"Track electricity and water per room to optimise operating costs.",
@@ -531,7 +575,7 @@ const EN = {
 "Cảm ơn bạn.":"Thank you.",
 "MayOS được phát triển và vận hành bởi Hộ kinh doanh Nguyễn Mạnh Hùng 6 (đăng ký ngày 24/12/2025, Hoa Lư, Ninh Bình, Việt Nam) · Liên hệ: hello@lamayhotel.com":"MayOS is developed and operated by Hộ kinh doanh Nguyễn Mạnh Hùng 6 (Nguyen Manh Hung 6 Household Business), registered on 24 December 2025 in Hoa Lu, Ninh Binh, Vietnam · Contact: hello@lamayhotel.com","Chúng tôi đã nhận được đề xuất và sẽ liên hệ trong thời gian sớm nhất.":"We have received your proposal and will be in touch as soon as possible.",
 "Một đội ngũ tinh gọn, xây cùng Claude.":"A lean team, building with <em>Claude</em>.",
-"MayOS được phát triển với Claude của Anthropic làm cộng sự kỹ thuật — từ thiết kế quy trình, lập trình đến kiểm thử. Bước tiếp theo là đưa Claude vào chính sản phẩm, phục vụ khách lưu trú và chủ khách sạn.":"MayOS is developed with Anthropic’s Claude as an engineering partner — from workflow design and coding to testing. The next step is bringing Claude into the product itself, serving guests and hotel owners.",
+"MayOS được phát triển với Claude của Anthropic làm cộng sự kỹ thuật. Lammy đã hỗ trợ khách qua Zalo và Facebook Messenger; trợ lý ngay trong MayOS Stay là bước tiếp theo.":"MayOS is developed with Anthropic’s Claude as an engineering partner. Lammy already assists guests on Zalo and Facebook Messenger; an assistant inside MayOS Stay is next.",
 "Phát triển cùng Claude":"Developed with Claude",
 "Tính năng mới đi từ một vấn đề ở quầy lễ tân đến bản chạy thật nhanh hơn, với Claude tham gia thiết kế, lập trình và kiểm thử.":"New features move faster from a front-desk problem to a production release, with Claude involved in design, coding and testing.",
 "Trợ lý đa ngôn ngữ trong Stay, xây trên Claude API, trả lời khách dựa trên thông tin thật của khách sạn.":"A multilingual assistant inside Stay, built on the Claude API, answering guests from the hotel’s real information.",
@@ -547,7 +591,7 @@ const T = {
        ph:"A few lines about your asset, location and what you are looking for…", preview:"Preview build: the form is not connected to a recipient yet, so nothing will be sent.",
        sending:"Sending…", send:"Send partnership proposal", fail:"Could not send. Please try again in a few minutes." }
 };
-const I18N_SEL = ".nav nav a,.nav .btn,.eyebrow,.hero .line>span,.lede,.btn .t,.hero-cta .btn:not(.primary),.proof div>span,h2,.sandbox li b,.sandbox li div>span,.card .role,.ai h3,.card p,.card li,.tag,.moment .who,.moment h3,.moment p,.mod h4,.mod p,.prow h3,.prow p,.prow li,.step h4,.step p,legend,.chips span,.f>label,option,form button,.note,.done h3,.done p,footer .legal";
+const I18N_SEL = ".nav nav a,.nav .btn,.eyebrow,.hero .line>span,.lede,.btn .t,.hero-cta .btn:not(.primary),.proof div>span,h2,.sandbox li b,.sandbox li div>span,.card .role,.ai h3,.card p,.card li,.feature-link,.feature-card h3,.feature-detail summary,.tag,.moment .who,.moment h3,.moment p,.mod h4,.mod p,.prow h3,.prow p,.prow li,.step h4,.step p,legend,.chips span,.f>label,option,form button,.note,.done h3,.done p,footer .legal";
 let LANG = "vi";
 function setLang(l){
   LANG = l === "en" ? "en" : "vi";
@@ -754,10 +798,14 @@ function setLang(l){
 })();
 
 /* ---------------- Liên kết & form ---------------- */
+document.querySelectorAll(".feature-detail").forEach(detail => detail.addEventListener("toggle", () => {
+  if (hasGSAP && !REDUCED && typeof ScrollTrigger !== "undefined") requestAnimationFrame(() => ScrollTrigger.refresh());
+}));
 document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener("click", e => {
   const el = document.querySelector(a.getAttribute("href")); if (!el) return;
   e.preventDefault();
   if (a.dataset.role){ const r = document.querySelector('input[name="role"][value="'+a.dataset.role+'"]'); if (r) r.checked = true; }
+  if (a.classList.contains("feature-link")) el.querySelector("summary")?.focus({ preventScroll:true });
   el.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block:"start" });
 }));
 
