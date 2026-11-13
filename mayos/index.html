@@ -79,8 +79,9 @@ h2 em,h1 em{font-style:italic;color:var(--amber)}
 
 /* ---------- hero ---------- */
 .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding-top:140px;padding-bottom:48px}
-.hero h1{font-size:clamp(46px,8.6vw,132px)}
-.hero .line{white-space:nowrap}
+.hero h1{font-size:clamp(46px,8.6vw,132px);line-height:.98;display:flex;flex-direction:column}
+/* Keep accent/descender room inside the reveal mask without spacing lines apart. */
+.hero .line{white-space:nowrap;padding:.12em 0 .16em;margin:-.14em 0}
 .line{display:block;overflow:hidden;padding-bottom:.08em}
 .line>span{display:block}
 .hero .lede{max-width:48ch}
