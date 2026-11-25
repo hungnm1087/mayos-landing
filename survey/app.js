@@ -5,7 +5,10 @@ import { analyze, fmt, LEVEL } from './analysis.js';
 const SUPABASE_URL = 'https://rthztiisojyonulnvgwo.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Ld4ewNi9GZIIlq3CBMSrag_jphrnrD0';
 const DOMAIN = 'partner.mayos.app';
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+import { demoClient, resetDemo } from './demo.js';
+const DEMO = new URLSearchParams(location.search).has('demo');
+const DEMO_ROLE = new URLSearchParams(location.search).get('demo') === 'admin' ? 'admin' : 'partner';
+const sb = DEMO ? demoClient(DEMO_ROLE) : createClient(SUPABASE_URL, SUPABASE_KEY);
 const app = document.getElementById('app');
 const who = document.getElementById('who');
 const MONTHS = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
@@ -22,6 +25,11 @@ async function boot() {
   const { data: prof } = await sb.from('profiles').select('*').eq('user_id', session.user.id).maybeSingle();
   if (!prof) { await sb.auth.signOut(); return renderLogin('Tài khoản chưa được cấp quyền.'); }
   me = prof;
+  if (DEMO) {
+    who.innerHTML = `<span class="badge">Xem thử</span>${DEMO_ROLE === 'admin' ? '<a href="?demo">Điền khảo sát</a>' : '<a href="?demo=admin">Xem phân tích →</a>'}<button class="link" id="rst">Xóa dữ liệu thử</button>`;
+    document.getElementById('rst').onclick = () => { if (confirm('Xóa toàn bộ câu trả lời thử?')) { resetDemo(); location.reload(); } };
+    return DEMO_ROLE === 'admin' ? renderAdmin() : renderPartner();
+  }
   who.innerHTML = `<span>${esc(prof.org_name || prof.username)}</span><button class="link" id="pwbtn">Đổi mật khẩu</button><button class="link" id="out">Đăng xuất</button>`;
   document.getElementById('out').onclick = async () => { await sb.auth.signOut(); location.reload(); };
   document.getElementById('pwbtn').onclick = changePassword;
@@ -176,6 +184,10 @@ async function callAdmin(body) {
 }
 
 async function renderAdmin() {
+  if (DEMO) { // xem thử: vào thẳng báo cáo phân tích của bản thử
+    const [{ data: profs }, { data: resps }] = await Promise.all([sb.from('profiles').select('*').order(), sb.from('survey_responses').select('*')]);
+    return renderReport(profs[0], resps[0]);
+  }
   const [{ data: profs }, { data: resps }] = await Promise.all([
     sb.from('profiles').select('*').eq('role', 'partner').order('created_at', { ascending: false }),
     sb.from('survey_responses').select('*'),
@@ -274,7 +286,7 @@ function renderReport(p, r) {
 
     <div class="card"><h2>Câu trả lời đầy đủ</h2>${SECTIONS.map(s => `<h3>${s.id}. ${esc(s.title)}</h3><div class="tbl"><table><tbody>
       ${s.questions.filter(q => visible(q, a)).map(q => `<tr><td style="width:40%">${esc(q.label)}</td><td>${answerText(q, a[q.id])}</td></tr>`).join('')}</tbody></table></div>`).join('')}</div>`;
-  document.getElementById('back').onclick = renderAdmin;
+  document.getElementById('back').onclick = DEMO ? () => { location.search = '?demo'; } : renderAdmin;
   document.getElementById('sn').onclick = async () => {
     const { error } = await sb.from('survey_responses').update({ admin_notes: document.getElementById('notes').value }).eq('user_id', p.user_id);
     document.getElementById('nm').textContent = error ? error.message : 'Đã lưu';
