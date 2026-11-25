@@ -46,11 +46,13 @@ export function scopeSummary(items) {
   return { pilot, later, pilotWeeks, laterWeeks };
 }
 
-export function readiness(a) {
+export function readiness(a, summary) {
   const flags = [];
   const midShare = pct(a.b_mix, 'Theo tuần') + pct(a.b_mix, 'Theo tháng (trung hạn)') + pct(a.b_mix, 'Dài hạn > 6 tháng');
   if (midShare >= 0.5) flags.push('Trung/dài hạn chiếm đa số — pilot 3 tuần chưa đủ, cần module trung hạn trước.');
-  if (!(a.g_rev_room || []).some(v => n(v) > 0)) flags.push('Thiếu doanh thu theo tháng — chưa có số liệu nền để đo hiệu quả.');
+  if (!n(a.g_rev_avg) && !(a.g_rev_room || []).some(v => n(v) > 0)) flags.push('Thiếu doanh thu — chưa có số liệu nền để đo hiệu quả.');
+  if (summary && summary.pilotWeeks > 3) flags.push(`Pilot ước tính ${summary.pilotWeeks} tuần (vượt mục tiêu 3 tuần) — thu hẹp phạm vi pilot hoặc làm trước các hạng mục điều chỉnh.`);
+  if (summary && summary.later.length) flags.push(`Cần xây mới trước khi dùng đầy đủ: ${summary.later.map(i => i.module.split(':')[0]).join('; ')}.`);
   if (a.g_bank === 'Không') flags.push('Tài khoản cơ sở chưa tách khỏi cá nhân — khó kiểm chứng doanh thu/lợi nhuận.');
   if (a.g_books === 'Sổ tay' || a.g_books === 'Không ghi chép đầy đủ') flags.push('Sổ sách chưa đầy đủ — nên ưu tiên phương án theo doanh thu.');
   if (a.i_transparency === 'Không') flags.push('Không chia sẻ số liệu — không thể áp dụng chia theo lợi nhuận.');
@@ -60,25 +62,106 @@ export function readiness(a) {
   return { score, flags };
 }
 
+const OTA_KEYS = ['Booking.com', 'Agoda', 'Airbnb', 'Traveloka', 'Expedia/Trip.com'];
+
+// Doanh thu phòng/năm: ưu tiên bảng 12 tháng (≥ 6 tháng có số), sau đó tháng bình thường,
+// sau đó trung bình cao/thấp điểm.
+function roomRevenue(a) {
+  const filled = (a.g_rev_room || []).map(n).filter(v => v > 0);
+  if (filled.length >= 6) return { value: filled.reduce((s, v) => s + v, 0) / filled.length * 12, source: 'bảng 12 tháng' };
+  if (n(a.g_rev_avg)) return { value: n(a.g_rev_avg) * 12, source: 'tháng bình thường × 12' };
+  if (n(a.g_rev_peak) && n(a.g_rev_low)) return { value: (n(a.g_rev_peak) + n(a.g_rev_low)) / 2 * 12, source: 'trung bình cao/thấp điểm' };
+  return { value: 0, source: 'chưa có' };
+}
+
+// Doanh thu phòng suy ra từ số phòng × công suất × giá (độc lập với con số tự khai)
+function impliedRoomRevenue(a) {
+  const rooms = n(a.c_rooms), occ = n(a.g_occ) / 100;
+  if (!rooms || !occ) return 0;
+  const mix = a.b_mix || {};
+  const midFrac = pct(mix, 'Theo tuần') + pct(mix, 'Theo tháng (trung hạn)') + pct(mix, 'Dài hạn > 6 tháng');
+  const shortFrac = 1 - midFrac;
+  const shortRev = n(a.c_adr) ? rooms * occ * 365 * n(a.c_adr) : 0;
+  const midRev = n(a.c_monthly_rate) ? rooms * occ * 12 * n(a.c_monthly_rate) : 0;
+  if (shortRev && midRev) return shortFrac * shortRev + midFrac * midRev;
+  return shortRev || midRev;
+}
+
 export function baseline(a) {
-  const months = (a.g_rev_room || []).map(n);
-  const filled = months.filter(v => v > 0);
-  const roomRev = filled.length ? filled.reduce((s, v) => s + v, 0) / filled.length * 12 : 0;
-  const others = (a.g_rev_other || []).map(n).filter(v => v > 0);
-  const otherRev = others.length ? others.reduce((s, v) => s + v, 0) / others.length * 12 : 0;
+  const rr = roomRevenue(a);
+  const roomRev = rr.value;
+  const otherRev = n(a.g_rev_other_avg) * 12;
   const ch = a.d_channels || {};
-  const otaShare = ['Booking.com', 'Agoda', 'Airbnb', 'Traveloka', 'Expedia/Trip.com'].reduce((s, k) => s + pct(ch, k), 0);
+  const otaShare = OTA_KEYS.reduce((s, k) => s + pct(ch, k), 0);
   const commission = (n(a.d_commission) || 17) / 100;
   const otaCost = roomRev * otaShare * commission;
-  const monthlyFixed = (a.a_premises === 'Đi thuê' ? n(a.a_rent) : 0) + n(a.f_payroll) + n(a.g_cost_utilities) + n(a.g_cost_marketing) + n(a.g_cost_supplies) + n(a.g_cost_software) + n(a.g_cost_other) + n(a.e_maint);
-  const cost = monthlyFixed * 12 + otaCost;
+  const detailMonthly = (a.a_premises === 'Đi thuê' ? n(a.a_rent) : 0) + n(a.f_payroll) + n(a.g_cost_utilities) + n(a.g_cost_marketing) + n(a.g_cost_supplies) + n(a.g_cost_software) + n(a.g_cost_other) + n(a.e_maint);
+  const declaredMonthly = n(a.g_cost_month);
+  // Ưu tiên tổng chi phí tự khai; nếu thiếu thì cộng chi tiết + hoa hồng OTA
+  const cost = declaredMonthly ? declaredMonthly * 12 : detailMonthly * 12 + otaCost;
   const revenue = roomRev + otherRev;
-  const profitGiven = n(a.g_profit) * 12;
-  const profit = profitGiven || (revenue - cost);
+  const profit = revenue - cost;
   const rooms = n(a.c_rooms);
   const occ = n(a.g_occ) / 100;
-  return { roomRev, otherRev, revenue, otaShare, commission, otaCost, cost, profit, profitEstimated: !profitGiven,
+  return { roomRev, revSource: rr.source, otherRev, revenue, otaShare, commission, otaCost, cost, profit, profitEstimated: true,
+    detailMonthly, declaredMonthly, implied: impliedRoomRevenue(a),
     margin: revenue ? profit / revenue : 0, rooms, occ, revpar: rooms ? roomRev / (rooms * 365) : 0 };
+}
+
+// Độ tin cậy số liệu: đối chiếu chéo các câu trả lời với nhau, không cần chứng từ.
+export function credibility(a, b) {
+  const checks = [];
+  // ok: true/false, hoặc số 0..1 (điểm từng phần). Lệch nhỏ đạt đủ, lệch vừa được nửa điểm.
+  const add = (name, ok, detail, weight = 15) => {
+    const credit = typeof ok === 'number' ? ok : (ok ? 1 : 0);
+    checks.push({ name, ok: credit >= 1, partial: credit > 0 && credit < 1, credit, detail, weight });
+  };
+  const grade = (g, tol) => g <= tol ? 1 : g <= tol * 2 ? 0.5 : 0;
+  const gap = (x, y) => (x && y) ? Math.abs(x - y) / Math.max(x, y) : null;
+
+  const g1 = gap(b.roomRev, b.implied);
+  if (g1 !== null) add('Doanh thu khai vs phòng × công suất × giá', grade(g1, 0.2),
+    `Khai ${fmt(b.roomRev)}/năm, suy ra ${fmt(b.implied)}/năm (lệch ${Math.round(g1 * 100)}%)`, 35);
+
+  const otaLast = n(a.d_ota_last) * 12;
+  const g2 = gap(otaLast, b.otaCost);
+  if (g2 !== null) add('Hoa hồng OTA thực trả vs doanh thu × tỷ lệ OTA', grade(g2, 0.3),
+    `Hoa hồng tháng gần nhất × 12 = ${fmt(otaLast)}, suy ra ${fmt(b.otaCost)} (lệch ${Math.round(g2 * 100)}%)`, 25);
+
+  const peak = n(a.g_rev_peak), low = n(a.g_rev_low), avg = n(a.g_rev_avg);
+  if (peak && low && avg) add('Tháng bình thường nằm giữa cao và thấp điểm', avg >= low && avg <= peak && peak >= low,
+    `Thấp ${fmt(low)} · bình thường ${fmt(avg)} · cao ${fmt(peak)}`);
+
+  const g3 = gap(b.declaredMonthly, b.detailMonthly + b.otaCost / 12);
+  const detailCount = ['g_cost_utilities', 'g_cost_marketing', 'g_cost_supplies', 'g_cost_software', 'g_cost_other', 'e_maint'].filter(k => n(a[k]) > 0).length;
+  if (g3 !== null && detailCount >= 3) add('Tổng chi phí khai vs cộng chi phí chi tiết', grade(g3, 0.2),
+    `Khai ${fmt(b.declaredMonthly)}/tháng, cộng chi tiết + OTA ${fmt(b.detailMonthly + b.otaCost / 12)}/tháng`);
+
+  if (b.declaredMonthly && n(a.f_payroll)) add('Quỹ lương không vượt tổng chi phí', n(a.f_payroll) < b.declaredMonthly,
+    `Lương ${fmt(n(a.f_payroll))}, tổng chi ${fmt(b.declaredMonthly)}`);
+
+  if (b.revenue) {
+    const maxMargin = a.a_premises === 'Đi thuê' ? 0.45 : 0.55;
+    add('Biên lợi nhuận trong khoảng hợp lý', b.margin <= -0.3 ? 0 : b.margin <= maxMargin ? 1 : b.margin <= maxMargin + 0.1 ? 0.5 : 0,
+      `Biên ${(b.margin * 100).toFixed(0)}% (khách sạn nhỏ ${a.a_premises === 'Đi thuê' ? 'đi thuê' : 'sở hữu'} thường dưới ${maxMargin * 100}%)`);
+  }
+  if (n(a.g_occ)) add('Công suất trong khoảng hợp lý', n(a.g_occ) <= 92, `${n(a.g_occ)}%`, 10);
+
+  const val = n(a.k_valuation);
+  if (val && b.profit > 0) { const mult = val / b.profit;
+    add('Định giá so với lợi nhuận', mult >= 1.5 && mult <= 6, `Định giá ≈ ${mult.toFixed(1)} lần lợi nhuận năm (thường 2–5 lần)`, 10); }
+
+  const links = ['l_booking', 'l_agoda', 'l_gmaps'].filter(k => /^https?:\/\//i.test(a[k] || '')).length;
+  add('Có link công khai để đối chiếu giá & đánh giá', links >= 1, `${links}/3 link`, 10);
+
+  const verify = a.g_verify || [];
+  const willVerify = verify.length && !verify.includes('Chưa sẵn sàng');
+  add('Đồng ý một cách xác nhận số liệu', !!willVerify, willVerify ? verify.join('; ') : 'Chưa chọn hoặc chưa sẵn sàng', 15);
+
+  const total = checks.reduce((s, c) => s + c.weight, 0) || 1;
+  const score = Math.round(checks.reduce((s, c) => s + c.credit * c.weight, 0) / total * 100);
+  const level = score >= 80 ? 'Cao' : score >= 55 ? 'Trung bình' : 'Thấp';
+  return { checks, score, level };
 }
 
 // Giá trị MayOS có thể tạo thêm mỗi năm (kịch bản cơ sở)
@@ -115,12 +198,17 @@ export function equityOptions(a, b, u) {
   const fixed = 0.015, share = 0.3;
   const B = mk('B. Kết hợp: cố định + thưởng lợi nhuận', b.roomRev * fixed + u.base * share,
     `1,5% doanh thu phòng + 30% lợi nhuận tăng thêm vượt ngưỡng ${fmt(hurdle / 12)}/tháng (lợi nhuận nền hoặc mức tối thiểu chủ đầu tư yêu cầu).`);
+  // C: cổ phần. Giới hạn bởi 3 trần: giá trị đóng góp, mức tối đa chủ đầu tư chấp nhận,
+  // và trần bảo vệ — chủ đầu tư luôn giữ ≥ 60% giá trị tăng thêm:
+  //   (1 − eq)(P + U) − P ≥ 0,6U  ⇔  eq ≤ 0,4U / (P + U)
   const contributed = u.base * term * 0.5;
-  let eq = valuation ? contributed / (valuation + contributed) : 0;
-  const capped = eq > maxShare;
-  eq = Math.min(eq, maxShare);
-  const C = mk('C. Cổ phần theo giá trị đóng góp', (b.profit + u.base) * eq,
-    `MayOS nhận ${(eq * 100).toFixed(1)}% cổ phần, trao dần trong ${term} năm theo KPI${capped ? ' (đã giới hạn theo mức tối đa chủ đầu tư chấp nhận)' : ''}. Giá trị hưởng là phần lợi nhuận tương ứng sau khi đạt mục tiêu.`,
+  const P = Math.max(b.profit, 0);
+  const eqContribution = valuation ? contributed / (valuation + contributed) : 0;
+  const eqProtect = (P + u.base) > 0 ? 0.4 * u.base / (P + u.base) : 0;
+  const eq = Math.max(0, Math.min(eqContribution, maxShare, eqProtect));
+  const binding = eq === eqProtect ? 'trần bảo vệ chủ đầu tư (giữ ≥ 60% giá trị tăng thêm)' : eq === maxShare ? 'mức tối đa chủ đầu tư chấp nhận' : 'giá trị đóng góp';
+  const C = mk('C. Cổ phần theo giá trị đóng góp', (P + u.base) * eq,
+    `MayOS nhận ${(eq * 100).toFixed(1)}% cổ phần (giới hạn bởi ${binding}), trao dần trong ${term} năm theo KPI. Trong thời gian trao dần, MayOS chỉ hưởng trên phần lợi nhuận tăng thêm.`,
     { equity: eq, valuation, contributed, term });
   const recommend = (a.g_books === 'Sổ tay' || a.g_books === 'Không ghi chép đầy đủ' || a.i_transparency === 'Không') ? 'A'
     : (a.k_cash === 'Không chi tiền mặt, chỉ cổ phần' || a.i_model === 'Cổ phần pháp nhân') ? 'C' : 'B';
@@ -137,7 +225,12 @@ export function fmt(v) {
 
 export function analyze(a) {
   const items = scope(a);
+  const summary = scopeSummary(items);
   const b = baseline(a);
   const u = uplift(a, b);
-  return { items, summary: scopeSummary(items), readiness: readiness(a), baseline: b, uplift: u, equity: equityOptions(a, b, u) };
+  const cred = credibility(a, b);
+  const equity = equityOptions(a, b, u);
+  const revCheck = cred.checks.find(c => c.name.startsWith('Doanh thu khai'));
+  if (cred.score < 55 || (revCheck && revCheck.credit === 0)) equity.recommend = 'A'; // số liệu chưa đáng tin → chỉ chia theo doanh thu thực tế
+  return { items, summary, readiness: readiness(a, summary), baseline: b, credibility: cred, uplift: u, equity };
 }

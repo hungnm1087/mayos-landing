@@ -34,3 +34,4 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 .login{max-width:380px;margin:40px auto}
 @media print{.top,.bar,.noprint{display:none}body{background:#fff}}
 .mix .row{flex-wrap:nowrap;gap:6px}.mix input{min-width:0;flex:1}.brand span{white-space:nowrap}
+.note{background:var(--chip);border-radius:8px;padding:8px 10px;margin:8px 0 0}.detail{margin-top:14px;border-top:1px dashed var(--line);padding-top:6px}a{color:var(--accent)}
