@@ -1,11 +1,11 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { SECTIONS, ALL_QUESTIONS, CORE_QUESTIONS } from './questions.js';
-import { analyze, fmt, LEVEL } from './analysis.js';
+import { SECTIONS, ALL_QUESTIONS, CORE_QUESTIONS } from './questions.js?v=20261125';
+import { analyze, fmt, LEVEL } from './analysis.js?v=20261125';
 
 const SUPABASE_URL = 'https://rthztiisojyonulnvgwo.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Ld4ewNi9GZIIlq3CBMSrag_jphrnrD0';
 const DOMAIN = 'partner.mayos.app';
-import { demoClient, resetDemo } from './demo.js';
+import { demoClient, resetDemo } from './demo.js?v=20261125';
 const DEMO = new URLSearchParams(location.search).has('demo');
 const DEMO_ROLE = new URLSearchParams(location.search).get('demo') === 'admin' ? 'admin' : 'partner';
 const sb = DEMO ? demoClient(DEMO_ROLE) : createClient(SUPABASE_URL, SUPABASE_KEY);
