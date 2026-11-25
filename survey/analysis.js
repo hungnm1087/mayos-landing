@@ -51,6 +51,7 @@ export function readiness(a, summary) {
   const midShare = pct(a.b_mix, 'Theo tuần') + pct(a.b_mix, 'Theo tháng (trung hạn)') + pct(a.b_mix, 'Dài hạn > 6 tháng');
   if (midShare >= 0.5) flags.push('Trung/dài hạn chiếm đa số — pilot 3 tuần chưa đủ, cần module trung hạn trước.');
   if (!n(a.g_rev_avg) && !(a.g_rev_room || []).some(v => n(v) > 0)) flags.push('Thiếu doanh thu — chưa có số liệu nền để đo hiệu quả.');
+  if (n(a.g_debt_month) && n(a.g_rev_avg) && n(a.g_cost_month) && n(a.g_debt_month) > n(a.g_rev_avg) + n(a.g_rev_other_avg) - n(a.g_cost_month)) flags.push('Lợi nhuận tạm tính chưa đủ trả nợ vay hằng tháng — đối tác đang chịu áp lực tiền mặt.');
   if (summary && summary.pilotWeeks > 3) flags.push(`Pilot ước tính ${summary.pilotWeeks} tuần (vượt mục tiêu 3 tuần) — thu hẹp phạm vi pilot hoặc làm trước các hạng mục điều chỉnh.`);
   if (summary && summary.later.length) flags.push(`Cần xây mới trước khi dùng đầy đủ: ${summary.later.map(i => i.module.split(':')[0]).join('; ')}.`);
   if (a.g_bank === 'Không') flags.push('Tài khoản cơ sở chưa tách khỏi cá nhân — khó kiểm chứng doanh thu/lợi nhuận.');
@@ -147,9 +148,11 @@ export function credibility(a, b) {
   }
   if (n(a.g_occ)) add('Công suất trong khoảng hợp lý', n(a.g_occ) <= 92, `${n(a.g_occ)}%`, 10);
 
-  const val = n(a.k_valuation);
-  if (val && b.profit > 0) { const mult = val / b.profit;
-    add('Định giá so với lợi nhuận', mult >= 1.5 && mult <= 6, `Định giá ≈ ${mult.toFixed(1)} lần lợi nhuận năm (thường 2–5 lần)`, 10); }
+  const BENCH = { 'Homestay': 150e6, 'Boutique': 400e6, 'Khách sạn 2–3 sao': 350e6, 'Khách sạn 4–5 sao': 1.2e9, 'Căn hộ dịch vụ (CHDV)': 250e6, 'Serviced apartment cao cấp': 600e6, 'Khác': 300e6 };
+  const inv = n(a.k_invested), rooms = n(a.c_rooms);
+  if (inv && rooms) { const per = inv / rooms, ref = BENCH[a.a_segment] || 300e6, ratio = per / ref;
+    add('Vốn đầu tư mỗi phòng so với mức phổ biến', ratio <= 2 && ratio >= 0.3 ? 1 : ratio <= 3 ? 0.5 : 0,
+      `${fmt(per)}/phòng; tham chiếu ${a.a_segment || 'chung'} ≈ ${fmt(ref)}/phòng (ước lượng thô)`, 10); }
 
   const links = ['l_booking', 'l_agoda', 'l_gmaps'].filter(k => /^https?:\/\//i.test(a[k] || '')).length;
   add('Có link công khai để đối chiếu giá & đánh giá', links >= 1, `${links}/3 link`, 10);
@@ -197,7 +200,9 @@ export function talkingPoints(a) {
   const p = a.i_priorities || [], c = a.i_concerns || [];
   const t = [];
   if (p.includes('Không phát sinh chi phí cố định') || c.includes('Chi phí vượt lợi ích')) t.push('Nhấn mạnh: không thu phí cố định trước — MayOS chỉ hưởng khi doanh thu/lợi nhuận tăng.');
-  if (p.includes('Chỉ trả khi thấy kết quả')) t.push('Đề xuất 60 ngày đầu chỉ đo kết quả, chưa chia; chia từ tháng thứ 3 khi đã có số liệu thật.');
+  if (p.includes('Chỉ trả khi thấy kết quả')) t.push('Giải thích: 4 tuần đầu MayOS chỉ ghi nhận, không thay đổi vận hành, không thu phí. Lợi nhuận đo được là phần chủ đầu tư giữ trọn; MayOS chỉ chia trên phần làm ra thêm.');
+  const debt = n(a.g_debt_month);
+  if (debt && a._profitMonth !== undefined && debt > a._profitMonth) t.push('Lợi nhuận hiện tại có thể chưa đủ trả nợ vay → đối tác chịu áp lực tiền mặt: đề xuất miễn phí cơ bản 3 tháng đầu, chỉ thu phí thưởng.');
   if (p.includes('Giữ toàn quyền sở hữu cơ sở')) t.push('Tránh mở đầu bằng cổ phần; bắt đầu bằng chia theo kết quả, cổ phần chỉ là lựa chọn về sau.');
   if (p.includes('Giữ quyền quyết định cuối cùng') || c.includes('Mất kiểm soát cơ sở')) t.push('Làm rõ: MayOS đề xuất và vận hành công cụ, chủ đầu tư giữ quyền phê duyệt giá, nhân sự, chi tiêu lớn.');
   if (p.includes('Số liệu minh bạch, xem được bất cứ lúc nào') || c.includes('Lộ thông tin kinh doanh')) t.push('Demo dashboard chủ đầu tư; cam kết bảo mật dữ liệu bằng văn bản, dữ liệu thuộc về cơ sở.');
@@ -209,13 +214,26 @@ export function talkingPoints(a) {
   return t;
 }
 
+// Phí thưởng chia theo bậc trên phần lợi nhuận vượt ngưỡng: lệch ngưỡng ít ảnh hưởng tới phần chia.
+export function tieredIncentive(excess, hurdle) {
+  if (excess <= 0) return 0;
+  const h = Math.max(hurdle, 1);
+  const tiers = [[0.2 * h, 0.15], [0.3 * h, 0.25], [Infinity, 0.35]];
+  let left = excess, fee = 0;
+  for (const [width, rate] of tiers) { const part = Math.min(left, width); fee += part * rate; left -= part; if (left <= 0) break; }
+  return fee;
+}
+
 export function equityOptions(a, b, u) {
   const scopeRate = a.i_scope === 'Vận hành toàn phần' ? 0.04 : a.i_scope === 'Chỉ công nghệ' ? 0.02 : 0.03;
   const term = n(a.i_term) || 3;
-  const valuation = n(a.k_valuation) || Math.max(b.profit, 0) * 3.5;
-  const maxShare = n(a.k_max_share) / 100 || 0.3;
-  const minProfit = n(a.k_min_profit) * 12;
-  const hurdle = Math.max(b.profit, minProfit);
+  // Ngưỡng lợi nhuận ưu tiên: ưu tiên số ĐO được trong 4 tuần ghi nhận (MayOS nhập), nếu chưa có thì tạm tính từ khảo sát.
+  // Không hỏi chủ đầu tư "muốn giữ bao nhiêu" — chỉ dùng số liệu thực tế.
+  const measured = n(a.x_measured_profit_month) * 12;
+  const hurdle = measured || Math.max(b.profit, 0);
+  const hurdleMeasured = !!measured;
+  const valuation = Math.max(hurdle, 0) * 3.5; // tham chiếu nội bộ; định giá bàn trực tiếp
+  const maxShare = 0.3;
 
   const mk = (name, mayos, desc, extra = {}) => {
     const ownerGain = u.base - mayos;
@@ -224,9 +242,9 @@ export function equityOptions(a, b, u) {
   };
   const A = mk('A. % doanh thu phòng', b.roomRev * scopeRate,
     `${(scopeRate * 100).toFixed(1)}% doanh thu phòng, trả hằng tháng. Dễ kiểm chứng, phù hợp khi sổ sách chưa chuẩn.`, { rate: scopeRate });
-  const fixed = 0.015, share = 0.3;
-  const B = mk('B. Kết hợp: cố định + thưởng lợi nhuận', b.roomRev * fixed + u.base * share,
-    `1,5% doanh thu phòng + 30% lợi nhuận tăng thêm vượt ngưỡng ${fmt(hurdle / 12)}/tháng (lợi nhuận nền hoặc mức tối thiểu chủ đầu tư yêu cầu).`);
+  const fixed = 0.015;
+  const B = mk('B. Phí cơ bản + phí thưởng theo bậc', b.roomRev * fixed + tieredIncentive(u.base, hurdle),
+    `1,5% doanh thu phòng + phí thưởng trên lợi nhuận vượt ngưỡng ưu tiên ${fmt(hurdle / 12)}/tháng: phần vượt đến 20% ngưỡng chia 15%, 20–50% chia 25%, trên 50% chia 35%. Chủ đầu tư giữ trọn phần đang làm ra.`);
   // C: cổ phần. Giới hạn bởi 3 trần: giá trị đóng góp, mức tối đa chủ đầu tư chấp nhận,
   // và trần bảo vệ — chủ đầu tư luôn giữ ≥ 60% giá trị tăng thêm:
   //   (1 − eq)(P + U) − P ≥ 0,6U  ⇔  eq ≤ 0,4U / (P + U)
@@ -241,7 +259,7 @@ export function equityOptions(a, b, u) {
     { equity: eq, valuation, contributed, term });
   const recommend = (a.g_books === 'Sổ tay' || a.g_books === 'Không ghi chép đầy đủ' || a.i_transparency === 'Không') ? 'A'
     : preferredOption(a);
-  return { options: [A, B, C], recommend, valuation, hurdle };
+  return { options: [A, B, C], recommend, valuation, hurdle, hurdleMeasured };
 }
 
 export function fmt(v) {
@@ -258,6 +276,7 @@ export function analyze(a) {
   const b = baseline(a);
   const u = uplift(a, b);
   const cred = credibility(a, b);
+  a = { ...a, _profitMonth: b.profit / 12 };
   const equity = equityOptions(a, b, u);
   const revCheck = cred.checks.find(c => c.name.startsWith('Doanh thu khai'));
   if (cred.score < 55 || (revCheck && revCheck.credit === 0)) equity.recommend = 'A'; // số liệu chưa đáng tin → chỉ chia theo doanh thu thực tế
