@@ -1,11 +1,11 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { SECTIONS, ALL_QUESTIONS, CORE_QUESTIONS } from './questions.js?v=20261125';
-import { analyze, fmt, LEVEL } from './analysis.js?v=20261125';
+import { SECTIONS, ALL_QUESTIONS, CORE_QUESTIONS } from './questions.js?v=20261126';
+import { analyze, fmt, LEVEL } from './analysis.js?v=20261126';
 
 const SUPABASE_URL = 'https://rthztiisojyonulnvgwo.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Ld4ewNi9GZIIlq3CBMSrag_jphrnrD0';
 const DOMAIN = 'partner.mayos.app';
-import { demoClient, resetDemo } from './demo.js?v=20261125';
+import { demoClient, resetDemo } from './demo.js?v=20261126';
 const DEMO = new URLSearchParams(location.search).has('demo');
 const DEMO_ROLE = new URLSearchParams(location.search).get('demo') === 'admin' ? 'admin' : 'partner';
 const sb = DEMO ? demoClient(DEMO_ROLE) : createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -94,7 +94,9 @@ function bindForm(root, a, onChange) {
     a[el.dataset.q] = el.value; const f = root.querySelector(`[data-fmt="${el.dataset.q}"]`); if (f) f.textContent = el.value ? fmt(+el.value) : ''; onChange(el.dataset.q);
   }));
   root.querySelectorAll('[data-multi]').forEach(el => el.addEventListener('change', () => {
-    const id = el.dataset.multi; a[id] = [...root.querySelectorAll(`[data-multi="${id}"]:checked`)].map(x => x.value); onChange(id);
+    const id = el.dataset.multi; const q = ALL_QUESTIONS.find(x => x.id === id);
+    if (q && q.max && el.checked && root.querySelectorAll(`[data-multi="${id}"]:checked`).length > q.max) { el.checked = false; alert(`Chọn tối đa ${q.max} mục.`); return; }
+    a[id] = [...root.querySelectorAll(`[data-multi="${id}"]:checked`)].map(x => x.value); onChange(id);
   }));
   root.querySelectorAll('[data-mix]').forEach(el => el.addEventListener('input', () => {
     const id = el.dataset.mix; a[id] = { ...(a[id] || {}), [el.dataset.k]: el.value };
@@ -280,7 +282,10 @@ function renderReport(p, r) {
         <p>MayOS hưởng: <b>${fmt(o.mayos)}/năm</b><br>Chủ đầu tư giữ thêm: <b>${fmt(o.ownerGain)}/năm</b><br>
         <span class="small muted">MayOS nhận ${(o.mayosShareOfUplift * 100).toFixed(0)}% giá trị tạo thêm</span></p>
         <p class="small ${o.winwin ? 'okc' : 'err'}">${o.winwin ? '✓ Cân bằng: chủ đầu tư giữ phần lớn giá trị tăng thêm' : '⚠ Chưa cân bằng: điều chỉnh tỷ lệ'}</p></div>`).join('')}</div>
-      <p class="small muted">Các hệ số là giả định khởi điểm để đàm phán, cần rà soát với kế toán và luật sư.</p></div>
+      ${(a.i_priorities || []).length ? `<h3>Đối tác quan tâm</h3><p class="small">${a.i_priorities.map(esc).join(' · ')}</p>` : ''}
+      ${(a.i_concerns || []).length ? `<h3>Đối tác lo ngại</h3><p class="small">${a.i_concerns.map(esc).join(' · ')}</p>` : ''}
+      ${R.talking.length ? `<h3>Gợi ý trình bày trong buổi gặp</h3><ul class="small">${R.talking.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
+      <p class="small muted">Phương án khuyến nghị được suy ra từ điều đối tác quan tâm — đối tác không được hỏi trực tiếp về hình thức chia sẻ. Các hệ số là giả định khởi điểm để đàm phán, cần rà soát với kế toán và luật sư.</p></div>
 
     <div class="card noprint"><h2>Ghi chú nội bộ</h2><textarea id="notes">${esc(r.admin_notes)}</textarea><div class="row" style="margin-top:8px"><button id="sn">Lưu ghi chú</button><span id="nm" class="small muted"></span></div></div>
 
