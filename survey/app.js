@@ -1,5 +1,5 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { SECTIONS, ALL_QUESTIONS } from './questions.js';
+import { SECTIONS, ALL_QUESTIONS, CORE_QUESTIONS } from './questions.js';
 import { analyze, fmt, LEVEL } from './analysis.js';
 
 const SUPABASE_URL = 'https://rthztiisojyonulnvgwo.supabase.co';
@@ -61,7 +61,7 @@ function answered(q, a) {
   return v !== undefined && v !== '';
 }
 function progress(a) {
-  const qs = ALL_QUESTIONS.filter(q => visible(q, a));
+  const qs = CORE_QUESTIONS.filter(q => visible(q, a));
   return Math.round(qs.filter(q => answered(q, a)).length / qs.length * 100);
 }
 function fieldHtml(q, a, ro) {
@@ -69,6 +69,7 @@ function fieldHtml(q, a, ro) {
   const lab = `<label class="q">${esc(q.label)}${q.required ? ' <span class="req">*</span>' : ''}${q.hint ? `<span class="hint">${esc(q.hint)}</span>` : ''}</label>`;
   switch (q.type) {
     case 'textarea': return lab + `<textarea data-q="${q.id}" ${dis}>${esc(v)}</textarea>`;
+    case 'url': return lab + `<input type="url" inputmode="url" placeholder="https://…" data-q="${q.id}" value="${esc(v)}" ${dis}>`;
     case 'number': return lab + `<input type="number" min="0" step="any" data-q="${q.id}" value="${esc(v)}" ${dis}>`;
     case 'percent': return lab + `<div class="row"><input type="number" min="0" max="100" step="any" data-q="${q.id}" value="${esc(v)}" ${dis} style="max-width:140px"> %</div>`;
     case 'money': return lab + `<div class="row"><input type="number" min="0" step="1000" data-q="${q.id}" value="${esc(v)}" ${dis} style="max-width:240px"> VNĐ <span class="muted small" data-fmt="${q.id}">${v ? fmt(+v) : ''}</span></div>`;
@@ -107,6 +108,7 @@ async function renderPartner() {
   const a = resp.answers || {};
   const ro = resp.status === 'submitted';
   let cur = 0, timer = null, saving = false;
+  const showDetail = {};
 
   const save = async () => {
     saving = true; status('Đang lưu…');
@@ -119,10 +121,15 @@ async function renderPartner() {
     const s = SECTIONS[cur];
     app.innerHTML = `
       <div class="card"><h1>Khảo sát cơ sở pilot</h1>
-        <p class="muted small">${ro ? `Đã gửi lúc ${new Date(resp.submitted_at).toLocaleString('vi-VN')}. Anh/chị có thể xem lại nội dung; nếu cần sửa, vui lòng liên hệ MayOS để mở lại.` : 'Câu trả lời được tự động lưu. Anh/chị có thể quay lại hoàn thành sau. Số liệu chỉ MayOS và anh/chị xem được.'}</p></div>
-      <div class="nav">${SECTIONS.map((x, i) => `<button data-s="${i}" class="${i === cur ? 'on' : ''} ${x.questions.filter(q => visible(q, a)).every(q => answered(q, a)) ? 'done' : ''}">${x.id}. ${esc(x.title)}</button>`).join('')}</div>
+        <p class="muted small">${ro ? `Đã gửi lúc ${new Date(resp.submitted_at).toLocaleString('vi-VN')}. Anh/chị có thể xem lại nội dung; nếu cần sửa, vui lòng liên hệ MayOS để mở lại.` : 'Bản nhanh khoảng 10 phút — số ước tính cũng được. Câu trả lời tự động lưu, anh/chị có thể quay lại hoàn thành sau. Chỉ MayOS và anh/chị xem được.'}</p>
+        ${ro ? '' : '<p class="small note">Các con số được đối chiếu chéo tự động và chỉ là số liệu nền tạm tính. Số liệu nền chính thức sẽ được hai bên chốt theo 60 ngày vận hành thực tế trên MayOS — vì vậy anh/chị không cần chính xác tuyệt đối, chỉ cần sát thực tế.</p>'}</div>
+      <div class="nav">${SECTIONS.map((x, i) => `<button data-s="${i}" class="${i === cur ? 'on' : ''} ${x.questions.filter(q => q.core && visible(q, a)).every(q => answered(q, a)) ? 'done' : ''}">${x.id}. ${esc(x.title)}</button>`).join('')}</div>
       <div class="card" id="sec"><h2>${s.id}. ${esc(s.title)}</h2>${s.intro ? `<p class="muted small">${esc(s.intro)}</p>` : ''}
-        ${s.questions.filter(q => visible(q, a)).map(q => fieldHtml(q, a, ro)).join('')}
+        ${s.questions.filter(q => q.core && visible(q, a)).map(q => fieldHtml(q, a, ro)).join('')}
+        ${(() => { const det = s.questions.filter(q => !q.core && visible(q, a)); if (!det.length) return '';
+          const open = showDetail[s.id] || (ro && det.some(q => answered(q, a)));
+          return `<div class="detail">${open ? det.map(q => fieldHtml(q, a, ro)).join('') : ''}
+            ${ro ? '' : `<button class="link" id="tgl">${open ? 'Ẩn câu hỏi chi tiết' : `+ Thêm chi tiết (${det.length} câu, không bắt buộc)`}</button>`}</div>`; })()}
         <div class="row" style="margin-top:18px;justify-content:space-between">
           <button id="prev" ${cur === 0 ? 'disabled' : ''}>← Phần trước</button>
           ${cur < SECTIONS.length - 1 ? '<button id="next" class="primary">Phần tiếp →</button>' : ''}
@@ -133,6 +140,7 @@ async function renderPartner() {
     app.querySelectorAll('[data-s]').forEach(b => b.onclick = () => go(+b.dataset.s));
     document.getElementById('prev').onclick = () => go(cur - 1);
     const nx = document.getElementById('next'); if (nx) nx.onclick = () => go(cur + 1);
+    const tg = document.getElementById('tgl'); if (tg) tg.onclick = () => { showDetail[SECTIONS[cur].id] = !showDetail[SECTIONS[cur].id]; draw(); };
     if (!ro) {
       bindForm(document.getElementById('sec'), a, (id) => {
         clearTimeout(timer); timer = setTimeout(save, 800); status('Chưa lưu…');
@@ -210,6 +218,7 @@ async function renderAdmin() {
 function answerText(q, v) {
   if (v == null || v === '' || (Array.isArray(v) && !v.some(x => x !== '' && x != null))) return '<span class="muted">—</span>';
   if (q.type === 'money') return esc(fmt(+v));
+  if (q.type === 'url') return /^https?:\/\//i.test(v) ? `<a href="${esc(v)}" target="_blank" rel="noopener noreferrer">${esc(v)}</a>` : esc(v);
   if (q.type === 'percent') return esc(v) + '%';
   if (q.type === 'multi') return v.map(esc).join(', ');
   if (q.type === 'mix') return Object.entries(v).filter(([, x]) => +x > 0).map(([k, x]) => `${esc(k)}: ${esc(x)}%`).join(' · ');
@@ -227,13 +236,20 @@ function renderReport(p, r) {
     <div class="card"><h1>${esc(p.org_name)}</h1><p class="muted small">${esc(p.contact_name)} · ${r.status === 'submitted' ? 'Đã gửi ' + new Date(r.submitted_at).toLocaleString('vi-VN') : 'Đang điền (' + progress(a) + '%) — phân tích dựa trên dữ liệu hiện có'}</p>
       <div class="kpis">
         <div class="kpi"><span class="muted small">Mức sẵn sàng pilot</span><b>${R.readiness.score}/100</b></div>
+        <div class="kpi"><span class="muted small">Độ tin cậy số liệu</span><b class="${R.credibility.score >= 80 ? 'okc' : R.credibility.score >= 55 ? '' : 'err'}">${R.credibility.score}/100 · ${R.credibility.level}</b></div>
         <div class="kpi"><span class="muted small">Doanh thu năm</span><b>${fmt(b.revenue)}</b></div>
-        <div class="kpi"><span class="muted small">Lợi nhuận HĐ năm${b.profitEstimated ? ' (ước tính)' : ''}</span><b>${fmt(b.profit)}</b></div>
+        <div class="kpi"><span class="muted small">Lợi nhuận HĐ năm (tạm tính)</span><b>${fmt(b.profit)}</b></div>
         <div class="kpi"><span class="muted small">Biên lợi nhuận</span><b>${(b.margin * 100).toFixed(1)}%</b></div>
         <div class="kpi"><span class="muted small">Hoa hồng OTA / năm</span><b>${fmt(b.otaCost)}</b></div>
         <div class="kpi"><span class="muted small">RevPAR</span><b>${fmt(b.revpar)}</b></div>
       </div>
       ${R.readiness.flags.length ? `<h3>Lưu ý</h3><ul>${R.readiness.flags.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : ''}</div>
+
+    <div class="card"><h2>Độ tin cậy số liệu (đối chiếu chéo tự động)</h2>
+      <p class="small muted">Doanh thu dùng để tính: ${esc(b.revSource)}. Số liệu nền chỉ là tạm tính cho tới khi chốt theo 60 ngày vận hành thực tế.</p>
+      <div class="tbl"><table><tbody>${R.credibility.checks.map(c => `<tr><td>${c.ok ? '<span class="okc">✓</span>' : c.partial ? '<span style="color:var(--warn)">~</span>' : '<span class="err">⚠</span>'}</td><td>${esc(c.name)}</td><td class="small muted">${esc(c.detail)}</td></tr>`).join('')}</tbody></table></div>
+      ${['l_booking', 'l_agoda', 'l_gmaps'].some(k => a[k]) ? `<p class="small">Đối chiếu thủ công: ${['l_booking', 'l_agoda', 'l_gmaps'].filter(k => /^https?:\/\//i.test(a[k] || '')).map(k => `<a href="${esc(a[k])}" target="_blank" rel="noopener noreferrer">${k === 'l_booking' ? 'Booking' : k === 'l_agoda' ? 'Agoda' : 'Google Maps'}</a>`).join(' · ')} — xem giá bán, điểm và số đánh giá 12 tháng qua.</p>` : ''}
+      ${R.credibility.score < 55 ? '<p class="small err">Độ tin cậy thấp: chỉ nên đề xuất phương án A (theo doanh thu thực tế qua hệ thống) cho tới khi chốt số liệu nền.</p>' : ''}</div>
 
     <div class="card"><h2>1. Phiếu phạm vi custom (tự động)</h2>
       <p class="small muted">Pilot: ${R.summary.pilot.length} hạng mục, ước tính ${R.summary.pilotWeeks} tuần. Giai đoạn sau: ${R.summary.later.length} hạng mục xây mới, khoảng ${R.summary.laterWeeks} tuần phát triển.</p>
