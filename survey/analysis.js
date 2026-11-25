@@ -180,6 +180,35 @@ export function uplift(a, b) {
   return { items, base, low: base * 0.5, high: base * 1.5 };
 }
 
+// Suy ra phương án phù hợp từ điều đối tác quan tâm (không hỏi thẳng hình thức chia sẻ)
+function preferredOption(a) {
+  const p = a.i_priorities || [];
+  const has = x => p.includes(x);
+  if (a.i_model === 'Cổ phần pháp nhân' || a.k_cash === 'Không chi tiền mặt, chỉ cổ phần') return 'C'; // dữ liệu cũ / trả lời chi tiết
+  const keepOwnership = has('Giữ toàn quyền sở hữu cơ sở');
+  if (has('Cùng phát triển lâu dài, mở rộng thêm cơ sở') && !keepOwnership) return 'C';
+  if (has('Cách tính đơn giản, dễ hiểu') && !has('Chỉ trả khi thấy kết quả')) return 'A';
+  if (has('Chỉ trả khi thấy kết quả') || has('Không phát sinh chi phí cố định')) return 'B';
+  return keepOwnership ? 'A' : 'B';
+}
+
+// Gợi ý cách trình bày phương án trong buổi gặp, dựa trên ưu tiên & lo ngại
+export function talkingPoints(a) {
+  const p = a.i_priorities || [], c = a.i_concerns || [];
+  const t = [];
+  if (p.includes('Không phát sinh chi phí cố định') || c.includes('Chi phí vượt lợi ích')) t.push('Nhấn mạnh: không thu phí cố định trước — MayOS chỉ hưởng khi doanh thu/lợi nhuận tăng.');
+  if (p.includes('Chỉ trả khi thấy kết quả')) t.push('Đề xuất 60 ngày đầu chỉ đo kết quả, chưa chia; chia từ tháng thứ 3 khi đã có số liệu thật.');
+  if (p.includes('Giữ toàn quyền sở hữu cơ sở')) t.push('Tránh mở đầu bằng cổ phần; bắt đầu bằng chia theo kết quả, cổ phần chỉ là lựa chọn về sau.');
+  if (p.includes('Giữ quyền quyết định cuối cùng') || c.includes('Mất kiểm soát cơ sở')) t.push('Làm rõ: MayOS đề xuất và vận hành công cụ, chủ đầu tư giữ quyền phê duyệt giá, nhân sự, chi tiêu lớn.');
+  if (p.includes('Số liệu minh bạch, xem được bất cứ lúc nào') || c.includes('Lộ thông tin kinh doanh')) t.push('Demo dashboard chủ đầu tư; cam kết bảo mật dữ liệu bằng văn bản, dữ liệu thuộc về cơ sở.');
+  if (p.includes('Dễ dừng nếu không hiệu quả') || c.includes('Bị ràng buộc dài hạn')) t.push('Đề xuất giai đoạn thử 3 tháng, được dừng nếu không đạt KPI, bàn giao toàn bộ dữ liệu.');
+  if (p.includes('Cùng phát triển lâu dài, mở rộng thêm cơ sở')) t.push('Mở ra lộ trình cổ phần theo KPI và ưu đãi khi đưa thêm cơ sở vào hệ thống.');
+  if (c.includes('Nhân viên khó thích nghi')) t.push('Cam kết đào tạo tại chỗ và hỗ trợ trực tiếp 2 tuần đầu sau go-live.');
+  if (c.includes('Chưa tin công nghệ/AI')) t.push('Lammy chạy chế độ có người duyệt trước khi gửi trong giai đoạn đầu.');
+  if (c.includes('Chất lượng phục vụ khách bị ảnh hưởng')) t.push('Theo dõi điểm đánh giá OTA hằng tuần như một KPI bắt buộc.');
+  return t;
+}
+
 export function equityOptions(a, b, u) {
   const scopeRate = a.i_scope === 'Vận hành toàn phần' ? 0.04 : a.i_scope === 'Chỉ công nghệ' ? 0.02 : 0.03;
   const term = n(a.i_term) || 3;
@@ -211,7 +240,7 @@ export function equityOptions(a, b, u) {
     `MayOS nhận ${(eq * 100).toFixed(1)}% cổ phần (giới hạn bởi ${binding}), trao dần trong ${term} năm theo KPI. Trong thời gian trao dần, MayOS chỉ hưởng trên phần lợi nhuận tăng thêm.`,
     { equity: eq, valuation, contributed, term });
   const recommend = (a.g_books === 'Sổ tay' || a.g_books === 'Không ghi chép đầy đủ' || a.i_transparency === 'Không') ? 'A'
-    : (a.k_cash === 'Không chi tiền mặt, chỉ cổ phần' || a.i_model === 'Cổ phần pháp nhân') ? 'C' : 'B';
+    : preferredOption(a);
   return { options: [A, B, C], recommend, valuation, hurdle };
 }
 
@@ -232,5 +261,5 @@ export function analyze(a) {
   const equity = equityOptions(a, b, u);
   const revCheck = cred.checks.find(c => c.name.startsWith('Doanh thu khai'));
   if (cred.score < 55 || (revCheck && revCheck.credit === 0)) equity.recommend = 'A'; // số liệu chưa đáng tin → chỉ chia theo doanh thu thực tế
-  return { items, summary, readiness: readiness(a, summary), baseline: b, credibility: cred, uplift: u, equity };
+  return { items, summary, readiness: readiness(a, summary), baseline: b, credibility: cred, uplift: u, equity, talking: talkingPoints(a) };
 }

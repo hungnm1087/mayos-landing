@@ -94,7 +94,8 @@ export const SECTIONS = [
   ]},
   { id: 'I', title: 'Hợp tác', questions: [
     { id: 'i_scope', label: 'Phạm vi mong muốn từ MayOS', type: 'select', required: true, core: true, options: ['Chỉ công nghệ', 'Công nghệ + bán hàng (giá, OTA, marketing)', 'Vận hành toàn phần'] },
-    { id: 'i_model', label: 'Hình thức chia sẻ giá trị ưu tiên', type: 'select', core: true, options: ['% doanh thu', '% lợi nhuận', 'Kết hợp doanh thu + lợi nhuận', 'Cổ phần pháp nhân', 'Chưa xác định'] },
+    { id: 'i_priorities', label: 'Khi hợp tác với một đối tác vận hành, điều gì quan trọng nhất với anh/chị? (chọn tối đa 3)', type: 'multi', core: true, max: 3, options: ['Không phát sinh chi phí cố định', 'Chỉ trả khi thấy kết quả', 'Giữ toàn quyền sở hữu cơ sở', 'Giữ quyền quyết định cuối cùng', 'Số liệu minh bạch, xem được bất cứ lúc nào', 'Dễ dừng nếu không hiệu quả', 'Cùng phát triển lâu dài, mở rộng thêm cơ sở', 'Cách tính đơn giản, dễ hiểu'] },
+    { id: 'i_concerns', label: 'Anh/chị lo ngại điều gì nhất khi giao vận hành cho đối tác? (không bắt buộc)', type: 'multi', options: ['Mất kiểm soát cơ sở', 'Lộ thông tin kinh doanh', 'Chi phí vượt lợi ích', 'Nhân viên khó thích nghi', 'Bị ràng buộc dài hạn', 'Chưa tin công nghệ/AI', 'Chất lượng phục vụ khách bị ảnh hưởng'] },
     { id: 'g_verify', label: 'Anh/chị có thể xác nhận số liệu doanh thu bằng cách nào? (chọn cách thuận tiện nhất)', type: 'multi', core: true, options: ['Cho MayOS xem trực tiếp extranet OTA trong buổi gặp', 'Gửi ảnh chụp màn hình doanh thu OTA qua Zalo', 'Cho phép Channel Manager đọc lịch sử booking khi kết nối', 'Đồng ý chốt số liệu nền theo 60 ngày vận hành đầu', 'Chưa sẵn sàng'] },
     { id: 'i_rights', label: 'MayOS được quyết định những gì', type: 'multi', options: ['Giá bán', 'Kênh bán/OTA', 'Marketing', 'Nhân sự vận hành', 'Mua sắm/nhà cung cấp', 'Không, chỉ đề xuất'] },
     { id: 'i_term', label: 'Thời hạn hợp tác dự kiến (năm)', type: 'number' },
