@@ -1,11 +1,11 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { SECTIONS, ALL_QUESTIONS, CORE_QUESTIONS } from './questions.js?v=20261127';
-import { analyze, fmt, LEVEL } from './analysis.js?v=20261127';
+import { SECTIONS, ALL_QUESTIONS, CORE_QUESTIONS } from './questions.js?v=20261128';
+import { analyze, fmt, LEVEL, tieredIncentive } from './analysis.js?v=20261128';
 
 const SUPABASE_URL = 'https://rthztiisojyonulnvgwo.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Ld4ewNi9GZIIlq3CBMSrag_jphrnrD0';
 const DOMAIN = 'partner.mayos.app';
-import { demoClient, resetDemo } from './demo.js?v=20261127';
+import { demoClient, resetDemo } from './demo.js?v=20261128';
 const DEMO = new URLSearchParams(location.search).has('demo');
 const DEMO_ROLE = new URLSearchParams(location.search).get('demo') === 'admin' ? 'admin' : 'partner';
 const sb = DEMO ? demoClient(DEMO_ROLE) : createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -278,6 +278,12 @@ function renderReport(p, r) {
     <div class="card"><h2>3. Phương án chia sẻ giá trị / cổ phần</h2>
       <p class="small">Ngưỡng lợi nhuận ưu tiên của chủ đầu tư: <b>${fmt(eq.hurdle / 12)}/tháng</b> ${eq.hurdleMeasured ? '<span class="badge b-sub">Đã đo 4 tuần</span>' : '<span class="badge">Tạm tính từ khảo sát — sẽ thay bằng số đo 4 tuần</span>'}</p>
       <div class="row noprint"><label class="small grow">Lợi nhuận hoạt động đo được trong 4 tuần ghi nhận, quy ra 1 tháng (VNĐ)<input type="number" id="mp" min="0" step="1000" value="${esc((r.admin_data || {}).measured_profit_month)}"></label><button id="smp">Cập nhật ngưỡng</button></div>
+      ${eq.hurdle > 0 ? (() => { const H = eq.hurdle / 12;
+        const rows = [1.1, 1.3, 1.8].map(k => { const P = H * k, ex = P - H, fee = tieredIncentive(ex, H); return { P, ex, fee, keep: P - fee }; });
+        return `<details class="small"><summary>Cách tính phí thưởng theo bậc (ví dụ theo tháng)</summary>
+          <p>Chủ đầu tư giữ trọn ${fmt(H)}/tháng đầu tiên. Phần lợi nhuận vượt: đến 20% ngưỡng chia 15% · 20–50% chia 25% · trên 50% chia 35%. Phí cơ bản 1,5% doanh thu tính riêng.</p>
+          <div class="tbl"><table><thead><tr><th>Lợi nhuận tháng</th><th>Phần vượt ngưỡng</th><th>Phí thưởng MayOS</th><th>Chủ đầu tư giữ</th></tr></thead><tbody>
+          ${rows.map(x => `<tr><td>${fmt(x.P)}</td><td>${fmt(x.ex)}</td><td>${fmt(x.fee)}</td><td><b>${fmt(x.keep)}</b></td></tr>`).join('')}</tbody></table></div></details>`; })() : ''}
       <div class="opts">${eq.options.map(o => `<div class="opt ${o.name[0] === eq.recommend ? 'rec' : ''}">
         ${o.name[0] === eq.recommend ? '<span class="badge b-sub">Khuyến nghị</span>' : ''}<h3>${esc(o.name)}</h3><p class="small">${esc(o.desc)}</p>
         <p>MayOS hưởng: <b>${fmt(o.mayos)}/năm</b><br>Chủ đầu tư giữ thêm: <b>${fmt(o.ownerGain)}/năm</b><br>
