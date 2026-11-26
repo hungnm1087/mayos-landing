@@ -1,11 +1,11 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
-import { SECTIONS, ALL_QUESTIONS, CORE_QUESTIONS } from './questions.js?v=20261128';
-import { analyze, fmt, LEVEL, tieredIncentive } from './analysis.js?v=20261128';
+import { SECTIONS, ALL_QUESTIONS, CORE_QUESTIONS } from './questions.js?v=20261129';
+import { analyze, fmt, LEVEL, tieredIncentive } from './analysis.js?v=20261129';
 
 const SUPABASE_URL = 'https://rthztiisojyonulnvgwo.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Ld4ewNi9GZIIlq3CBMSrag_jphrnrD0';
 const DOMAIN = 'partner.mayos.app';
-import { demoClient, resetDemo } from './demo.js?v=20261128';
+import { demoClient, resetDemo } from './demo.js?v=20261129';
 const DEMO = new URLSearchParams(location.search).has('demo');
 const DEMO_ROLE = new URLSearchParams(location.search).get('demo') === 'admin' ? 'admin' : 'partner';
 const sb = DEMO ? demoClient(DEMO_ROLE) : createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -72,39 +72,102 @@ function progress(a) {
   const qs = CORE_QUESTIONS.filter(q => visible(q, a));
   return Math.round(qs.filter(q => answered(q, a)).length / qs.length * 100);
 }
-function fieldHtml(q, a, ro) {
-  const v = a[q.id]; const dis = ro ? 'disabled' : '';
-  const lab = `<label class="q">${esc(q.label)}${q.required ? ' <span class="req">*</span>' : ''}${q.hint ? `<span class="hint">${esc(q.hint)}</span>` : ''}</label>`;
+const mixTotal = v => Object.values(v || {}).reduce((s, x) => s + (+x || 0), 0);
+// Tiền: người dùng nhập theo triệu (hoặc nghìn) đồng, lưu theo VNĐ
+const UNIT = { m: [1e6, 'triệu đồng'], k: [1e3, 'nghìn đồng'] };
+const unitOf = q => UNIT[q.unit || 'm'];
+const toDisplay = (q, v) => (v === '' || v == null) ? '' : String(+(+v / unitOf(q)[0]).toFixed(3)).replace('.', ',');
+const parseMoney = (q, s) => { const t = String(s).trim().replace(/\s/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.'); if (t === '') return ''; const x = +t; return isFinite(x) && x >= 0 ? String(Math.round(x * unitOf(q)[0])) : null; };
+const PILLS_MAX = 8; // select có ≤ 8 lựa chọn → hiển thị dạng nút chạm
+
+function fieldHtml(q, a) {
+  const v = a[q.id];
+  const head = `<div class="qhead"><label class="q" for="f_${q.id}">${esc(q.label)}${q.required ? ' <span class="req" aria-label="bắt buộc">*</span>' : ''}</label>${q.hint ? `<span class="hint">${esc(q.hint)}</span>` : ''}</div>`;
+  let body;
   switch (q.type) {
-    case 'textarea': return lab + `<textarea data-q="${q.id}" ${dis}>${esc(v)}</textarea>`;
-    case 'url': return lab + `<input type="url" inputmode="url" placeholder="https://…" data-q="${q.id}" value="${esc(v)}" ${dis}>`;
-    case 'number': return lab + `<input type="number" min="0" step="any" data-q="${q.id}" value="${esc(v)}" ${dis}>`;
-    case 'percent': return lab + `<div class="row"><input type="number" min="0" max="100" step="any" data-q="${q.id}" value="${esc(v)}" ${dis} style="max-width:140px"> %</div>`;
-    case 'money': return lab + `<div class="row"><input type="number" min="0" step="1000" data-q="${q.id}" value="${esc(v)}" ${dis} style="max-width:240px"> VNĐ <span class="muted small" data-fmt="${q.id}">${v ? fmt(+v) : ''}</span></div>`;
-    case 'select': return lab + `<select data-q="${q.id}" ${dis}><option value="">— Chọn —</option>${q.options.map(o => `<option ${v === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
-    case 'multi': return lab + `<div class="checks">${q.options.map(o => `<label><input type="checkbox" data-multi="${q.id}" value="${esc(o)}" ${(v || []).includes(o) ? 'checked' : ''} ${dis}>${esc(o)}</label>`).join('')}</div>`;
-    case 'mix': { const m = v || {}; const tot = Object.values(m).reduce((s, x) => s + (+x || 0), 0);
-      return lab + `<div class="mix">${q.options.map(o => `<span>${esc(o)}</span><div class="row"><input type="number" min="0" max="100" data-mix="${q.id}" data-k="${esc(o)}" value="${esc(m[o])}" ${dis}>%</div>`).join('')}<span class="tot" data-tot="${q.id}">Tổng: ${tot}% ${tot === 100 ? '✓' : '(cần bằng 100%)'}</span></div>`; }
-    case 'months': { const m = v || []; return lab + `<p class="hint">Ghi theo VNĐ. T1 = tháng 1 của 12 tháng gần nhất.</p><div class="months">${MONTHS.map((t, i) => `<div><span>${t}</span><input type="number" min="0" step="1000" data-months="${q.id}" data-i="${i}" value="${esc(m[i])}" ${dis}></div>`).join('')}</div>`; }
-    default: return lab + `<input type="text" data-q="${q.id}" value="${esc(v)}" ${dis}>`;
+    case 'textarea': body = `<textarea id="f_${q.id}" data-q="${q.id}" rows="3">${esc(v)}</textarea>`; break;
+    case 'url': body = `<input id="f_${q.id}" type="url" inputmode="url" autocapitalize="off" placeholder="Dán đường link vào đây" data-q="${q.id}" value="${esc(v)}">`; break;
+    case 'number': body = `<div class="stepper"><button type="button" class="stp" data-step="${q.id}" data-d="-1" aria-label="Giảm">−</button><input id="f_${q.id}" inputmode="decimal" data-q="${q.id}" value="${esc(v)}"><button type="button" class="stp" data-step="${q.id}" data-d="1" aria-label="Tăng">+</button></div>`; break;
+    case 'percent': body = `<div class="pct"><input type="range" min="0" max="100" step="1" data-range="${q.id}" value="${esc(v || 0)}" aria-label="${esc(q.label)}"><span class="pctbox"><input id="f_${q.id}" inputmode="decimal" data-q="${q.id}" value="${esc(v)}" placeholder="–">%</span></div>`; break;
+    case 'money': body = `<div class="money"><input id="f_${q.id}" inputmode="decimal" data-money="${q.id}" value="${esc(toDisplay(q, v))}" placeholder="0"><span class="unit">${unitOf(q)[1]}</span></div><div class="echo" data-echo="${q.id}">${v ? '= ' + esc(fmt(+v)) : ''}</div>`; break;
+    case 'select':
+      body = q.options.length <= PILLS_MAX
+        ? `<div class="pills" role="radiogroup">${q.options.map(o => `<button type="button" role="radio" aria-checked="${v === o}" class="pill ${v === o ? 'on' : ''}" data-pick="${q.id}" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>`
+        : `<select id="f_${q.id}" data-q="${q.id}"><option value="">— Chọn —</option>${q.options.map(o => `<option ${v === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+      break;
+    case 'multi': body = `${q.max ? `<span class="hint">Chọn tối đa ${q.max}</span>` : '<span class="hint">Chọn một hoặc nhiều</span>'}<div class="pills">${q.options.map(o => { const on = (v || []).includes(o); return `<button type="button" role="checkbox" aria-checked="${on}" class="pill ${on ? 'on' : ''}" data-multi="${q.id}" data-v="${esc(o)}">${on ? '✓ ' : ''}${esc(o)}</button>`; }).join('')}</div>`; break;
+    case 'mix': { const m = v || {}; const tot = mixTotal(m);
+      body = `<span class="hint">Kéo thanh hoặc gõ số — ước lượng là được</span>
+        <div class="mixbar" data-bar="${q.id}">${q.options.map((o, i) => `<i style="width:${Math.min(100, +m[o] || 0)}%" class="c${i % 8}"></i>`).join('')}</div>
+        <div class="mixrows">${q.options.map((o, i) => `<div class="mixrow"><span class="dot c${i % 8}"></span><span class="mixlabel">${esc(o)}</span>
+          <input type="range" min="0" max="100" step="5" data-mixr="${q.id}" data-k="${esc(o)}" value="${esc(+m[o] || 0)}" aria-label="${esc(o)}">
+          <span class="pctbox"><input inputmode="decimal" data-mix="${q.id}" data-k="${esc(o)}" value="${esc(m[o])}" placeholder="0">%</span></div>`).join('')}</div>
+        <div class="mixfoot"><span data-tot="${q.id}" class="${tot === 100 ? 'okc' : ''}">${totText(tot)}</span>${tot > 0 && tot !== 100 ? `<button type="button" class="link" data-norm="${q.id}">Tự cân lại thành 100%</button>` : ''}</div>`; break; }
+    case 'months': { const m = v || []; body = `<span class="hint">Theo triệu đồng. T1 = tháng đầu của 12 tháng gần nhất.</span><div class="months">${MONTHS.map((t, i) => `<label><span>${t}</span><input inputmode="decimal" data-months="${q.id}" data-i="${i}" value="${esc(m[i] ? toDisplay({}, m[i]) : '')}"></label>`).join('')}</div>`; break; }
+    default: body = `<input id="f_${q.id}" type="text" data-q="${q.id}" value="${esc(v)}">`;
   }
+  return `<div class="field" data-field="${q.id}">${head}${body}<div class="ferr" data-err="${q.id}"></div></div>`;
 }
+function totText(t) { return t === 100 ? 'Tổng 100% ✓' : t > 100 ? `Tổng ${t}% — thừa ${t - 100}%` : `Tổng ${t}% — còn ${100 - t}%`; }
+
 function bindForm(root, a, onChange) {
+  const set = (id, val) => { a[id] = val; const e = root.querySelector(`[data-err="${id}"]`); if (e) e.textContent = ''; root.querySelector(`[data-field="${id}"]`)?.classList.remove('bad'); onChange(id); };
   root.querySelectorAll('[data-q]').forEach(el => el.addEventListener('input', () => {
-    a[el.dataset.q] = el.value; const f = root.querySelector(`[data-fmt="${el.dataset.q}"]`); if (f) f.textContent = el.value ? fmt(+el.value) : ''; onChange(el.dataset.q);
+    set(el.dataset.q, el.value);
+    const r = root.querySelector(`[data-range="${el.dataset.q}"]`); if (r) r.value = +el.value || 0;
   }));
-  root.querySelectorAll('[data-multi]').forEach(el => el.addEventListener('change', () => {
-    const id = el.dataset.multi; const q = ALL_QUESTIONS.find(x => x.id === id);
-    if (q && q.max && el.checked && root.querySelectorAll(`[data-multi="${id}"]:checked`).length > q.max) { el.checked = false; alert(`Chọn tối đa ${q.max} mục.`); return; }
-    a[id] = [...root.querySelectorAll(`[data-multi="${id}"]:checked`)].map(x => x.value); onChange(id);
+  root.querySelectorAll('[data-range]').forEach(el => el.addEventListener('input', () => {
+    const t = root.querySelector(`[data-q="${el.dataset.range}"]`); t.value = el.value; set(el.dataset.range, el.value);
   }));
+  root.querySelectorAll('[data-step]').forEach(el => el.addEventListener('click', () => {
+    const id = el.dataset.step, t = root.querySelector(`[data-q="${id}"]`);
+    t.value = Math.max(0, (+t.value || 0) + +el.dataset.d); set(id, t.value);
+  }));
+  root.querySelectorAll('[data-money]').forEach(el => el.addEventListener('input', () => {
+    const q = ALL_QUESTIONS.find(x => x.id === el.dataset.money), val = parseMoney(q, el.value), echo = root.querySelector(`[data-echo="${q.id}"]`);
+    if (val === null) { echo.textContent = 'Chỉ nhập số, ví dụ 620 hoặc 1,5'; echo.className = 'echo err'; return; }
+    echo.className = 'echo'; echo.textContent = val ? '= ' + fmt(+val) : ''; set(q.id, val);
+  }));
+  root.querySelectorAll('[data-pick]').forEach(el => el.addEventListener('click', () => {
+    const id = el.dataset.pick, val = a[id] === el.dataset.v ? '' : el.dataset.v;
+    root.querySelectorAll(`[data-pick="${id}"]`).forEach(b => { const on = b.dataset.v === val; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
+    set(id, val);
+  }));
+  root.querySelectorAll('[data-multi]').forEach(el => el.addEventListener('click', () => {
+    const id = el.dataset.multi, q = ALL_QUESTIONS.find(x => x.id === id), cur = a[id] || [], on = cur.includes(el.dataset.v);
+    if (!on && q.max && cur.length >= q.max) { const e = root.querySelector(`[data-err="${id}"]`); e.textContent = `Chỉ chọn tối đa ${q.max} mục — bỏ bớt một mục trước.`; return; }
+    const next = on ? cur.filter(x => x !== el.dataset.v) : [...cur, el.dataset.v];
+    el.classList.toggle('on', !on); el.setAttribute('aria-checked', !on); el.textContent = (!on ? '✓ ' : '') + el.dataset.v;
+    set(id, next);
+  }));
+  const mixUpdate = (id) => {
+    const m = a[id] || {}, q = ALL_QUESTIONS.find(x => x.id === id), tot = mixTotal(m);
+    const bar = root.querySelector(`[data-bar="${id}"]`);
+    if (bar) [...bar.children].forEach((i, k) => { i.style.width = Math.min(100, +m[q.options[k]] || 0) + '%'; });
+    const t = root.querySelector(`[data-tot="${id}"]`); t.textContent = totText(tot); t.className = tot === 100 ? 'okc' : '';
+    let n = root.querySelector(`[data-norm="${id}"]`);
+    if (tot > 0 && tot !== 100 && !n) { t.insertAdjacentHTML('afterend', `<button type="button" class="link" data-norm="${id}">Tự cân lại thành 100%</button>`); n = root.querySelector(`[data-norm="${id}"]`); n.onclick = () => normalize(id); }
+    if ((tot === 100 || tot === 0) && n) n.remove();
+  };
+  const normalize = (id) => {
+    const q = ALL_QUESTIONS.find(x => x.id === id), m = { ...(a[id] || {}) }, tot = mixTotal(m); if (!tot) return;
+    let acc = 0; const keys = q.options.filter(o => +m[o] > 0);
+    keys.forEach((k, i) => { const v = i === keys.length - 1 ? 100 - acc : Math.round(+m[k] / tot * 100); m[k] = String(v); acc += v; });
+    a[id] = m; keys.forEach(k => { root.querySelector(`[data-mix="${id}"][data-k="${CSS.escape(k)}"]`).value = m[k]; root.querySelector(`[data-mixr="${id}"][data-k="${CSS.escape(k)}"]`).value = m[k]; });
+    mixUpdate(id); onChange(id);
+  };
+  root.querySelectorAll('[data-norm]').forEach(b => b.onclick = () => normalize(b.dataset.norm));
   root.querySelectorAll('[data-mix]').forEach(el => el.addEventListener('input', () => {
     const id = el.dataset.mix; a[id] = { ...(a[id] || {}), [el.dataset.k]: el.value };
-    const tot = Object.values(a[id]).reduce((s, x) => s + (+x || 0), 0);
-    root.querySelector(`[data-tot="${id}"]`).textContent = `Tổng: ${tot}% ${tot === 100 ? '✓' : '(cần bằng 100%)'}`; onChange(id);
+    root.querySelector(`[data-mixr="${id}"][data-k="${CSS.escape(el.dataset.k)}"]`).value = +el.value || 0; mixUpdate(id); set(id, a[id]);
+  }));
+  root.querySelectorAll('[data-mixr]').forEach(el => el.addEventListener('input', () => {
+    const id = el.dataset.mixr; a[id] = { ...(a[id] || {}), [el.dataset.k]: el.value };
+    root.querySelector(`[data-mix="${id}"][data-k="${CSS.escape(el.dataset.k)}"]`).value = el.value; mixUpdate(id); set(id, a[id]);
   }));
   root.querySelectorAll('[data-months]').forEach(el => el.addEventListener('input', () => {
-    const id = el.dataset.months; const arr = [...(a[id] || Array(12).fill(''))]; arr[+el.dataset.i] = el.value; a[id] = arr; onChange(id);
+    const id = el.dataset.months, arr = [...(a[id] || Array(12).fill(''))], val = parseMoney({}, el.value);
+    if (val === null) return; arr[+el.dataset.i] = val; set(id, arr);
   }));
 }
 
@@ -117,61 +180,115 @@ async function renderPartner() {
   }
   const a = resp.answers || {};
   const ro = resp.status === 'submitted';
-  let cur = 0, timer = null, saving = false;
+  const REVIEW = SECTIONS.length; // bước cuối: xem lại & gửi
+  let cur = progress(a) > 0 ? firstIncomplete() : -1; // -1 = màn hình chào
+  let timer = null, saving = false, warned = -2;
   const showDetail = {};
+  function firstIncomplete() { const i = SECTIONS.findIndex(s => s.questions.some(q => q.core && visible(q, a) && !answered(q, a))); return i < 0 ? REVIEW : i; }
+  const missingIn = (s) => s.questions.filter(q => q.required && visible(q, a) && !answered(q, a));
+  const mixBadIn = (s) => s.questions.filter(q => q.type === 'mix' && visible(q, a) && answered(q, a) && mixTotal(a[q.id]) !== 100);
 
   const save = async () => {
     saving = true; status('Đang lưu…');
     const { error } = await sb.from('survey_responses').update({ answers: a }).eq('user_id', me.user_id);
-    saving = false; status(error ? 'Lỗi lưu — kiểm tra kết nối' : 'Đã lưu ' + new Date().toLocaleTimeString('vi-VN'), !!error);
+    saving = false; status(error ? '⚠ Chưa lưu được — kiểm tra kết nối mạng' : '✓ Đã lưu', !!error);
   };
-  const status = (t, bad) => { const s = document.getElementById('st'); if (s) { s.textContent = t; s.className = 'small ' + (bad ? 'err' : 'muted'); } };
+  const status = (t, bad) => { const s = document.getElementById('st'); if (s) { s.textContent = t; s.className = 'saved ' + (bad ? 'err' : ''); } };
+  const queueSave = () => { clearTimeout(timer); timer = setTimeout(() => { timer = null; save(); }, 700); status('Đang lưu…'); };
+
+  if (ro) return renderReadOnly();
+
+  const stepHeader = () => {
+    const pct = progress(a);
+    return `<div class="stephead"><div class="row between"><span class="stepno">${cur === REVIEW ? 'Bước cuối' : `Bước ${cur + 1}/${SECTIONS.length}`}</span>
+      <details class="toc"><summary>Mục lục</summary><ol>${SECTIONS.map((x, i) => { const done = x.questions.filter(q => q.core && visible(q, a)).every(q => answered(q, a));
+        return `<li><button type="button" data-s="${i}" class="${i === cur ? 'on' : ''}">${done ? '✓' : '○'} ${esc(x.title)}</button></li>`; }).join('')}
+        <li><button type="button" data-s="${REVIEW}">➜ Xem lại & gửi</button></li></ol></details></div>
+      <div class="progress" aria-label="Đã hoàn thành ${pct}%"><i style="width:${pct}%"></i></div></div>`;
+  };
 
   const draw = () => {
+    if (cur === -1) return drawWelcome();
+    if (cur === REVIEW) return drawReview();
     const s = SECTIONS[cur];
-    app.innerHTML = `
-      <div class="card"><h1>Khảo sát cơ sở pilot</h1>
-        <p class="muted small">${ro ? `Đã gửi lúc ${new Date(resp.submitted_at).toLocaleString('vi-VN')}. Anh/chị có thể xem lại nội dung; nếu cần sửa, vui lòng liên hệ MayOS để mở lại.` : 'Bản nhanh khoảng 10 phút — số ước tính cũng được. Câu trả lời tự động lưu, anh/chị có thể quay lại hoàn thành sau. Chỉ MayOS và anh/chị xem được.'}</p>
-        ${ro ? '' : '<p class="small note">4 tuần đầu MayOS chỉ ghi nhận số liệu — không thay đổi cách vận hành và không thu phí. Phần cơ sở đang làm ra, anh/chị giữ trọn; MayOS chỉ được chia trên phần làm ra thêm. Các con số trong khảo sát chỉ để chuẩn bị phương án, được đối chiếu chéo tự động.</p>'}</div>
-      <div class="nav">${SECTIONS.map((x, i) => `<button data-s="${i}" class="${i === cur ? 'on' : ''} ${x.questions.filter(q => q.core && visible(q, a)).every(q => answered(q, a)) ? 'done' : ''}">${x.id}. ${esc(x.title)}</button>`).join('')}</div>
-      <div class="card" id="sec"><h2>${s.id}. ${esc(s.title)}</h2>${s.intro ? `<p class="muted small">${esc(s.intro)}</p>` : ''}
-        ${s.questions.filter(q => q.core && visible(q, a)).map(q => fieldHtml(q, a, ro)).join('')}
-        ${(() => { const det = s.questions.filter(q => !q.core && visible(q, a)); if (!det.length) return '';
-          const open = showDetail[s.id] || (ro && det.some(q => answered(q, a)));
-          return `<div class="detail">${open ? det.map(q => fieldHtml(q, a, ro)).join('') : ''}
-            ${ro ? '' : `<button class="link" id="tgl">${open ? 'Ẩn câu hỏi chi tiết' : `+ Thêm chi tiết (${det.length} câu, không bắt buộc)`}</button>`}</div>`; })()}
-        <div class="row" style="margin-top:18px;justify-content:space-between">
-          <button id="prev" ${cur === 0 ? 'disabled' : ''}>← Phần trước</button>
-          ${cur < SECTIONS.length - 1 ? '<button id="next" class="primary">Phần tiếp →</button>' : ''}
-        </div></div>
-      <div class="bar noprint"><div class="in"><div class="progress"><i style="width:${progress(a)}%"></i></div><span class="small">${progress(a)}%</span>
-        <span id="st" class="small muted"></span>
-        ${ro ? '<button onclick="print()">In / Lưu PDF</button>' : '<button class="primary" id="submit">Gửi khảo sát</button>'}</div></div>`;
-    app.querySelectorAll('[data-s]').forEach(b => b.onclick = () => go(+b.dataset.s));
+    const core = s.questions.filter(q => q.core && visible(q, a)), det = s.questions.filter(q => !q.core && visible(q, a));
+    const open = showDetail[s.id];
+    app.innerHTML = `${stepHeader()}
+      <section class="card step" id="sec"><h1 class="steptitle">${esc(s.title)}</h1>${s.intro ? `<p class="muted small">${esc(s.intro)}</p>` : ''}
+        ${core.map(q => fieldHtml(q, a)).join('')}
+        ${det.length ? `<div class="detail">${open ? det.map(q => fieldHtml(q, a)).join('') : ''}
+          <button type="button" class="more" id="tgl">${open ? 'Ẩn câu hỏi chi tiết' : `+ Thêm chi tiết <span class="muted">(${det.length} câu, không bắt buộc)</span>`}</button></div>` : ''}
+        <p class="ferr" id="steperr"></p>
+      </section>
+      <nav class="bar noprint"><div class="in"><button type="button" id="prev" class="ghost">←</button>
+        <span id="st" class="saved"></span><button type="button" class="primary grow" id="next">${cur === SECTIONS.length - 1 ? 'Xem lại & gửi →' : 'Tiếp tục →'}</button></div></nav>`;
+    bindNav();
     document.getElementById('prev').onclick = () => go(cur - 1);
-    const nx = document.getElementById('next'); if (nx) nx.onclick = () => go(cur + 1);
-    const tg = document.getElementById('tgl'); if (tg) tg.onclick = () => { showDetail[SECTIONS[cur].id] = !showDetail[SECTIONS[cur].id]; draw(); };
-    if (!ro) {
-      bindForm(document.getElementById('sec'), a, (id) => {
-        clearTimeout(timer); timer = setTimeout(save, 800); status('Chưa lưu…');
-        if (ALL_QUESTIONS.some(q => q.showIf && id in q.showIf)) { save(); draw(); }
-      });
-      document.getElementById('submit').onclick = submit;
-    }
+    document.getElementById('next').onclick = next;
+    const tg = document.getElementById('tgl'); if (tg) tg.onclick = () => { showDetail[s.id] = !open; draw(); };
+    bindForm(document.getElementById('sec'), a, (id) => {
+      queueSave();
+      const se = document.getElementById('steperr'); if (se && se.textContent && !missingIn(s).length && !mixBadIn(s).length) se.textContent = '';
+      if (ALL_QUESTIONS.some(q => q.showIf && id in q.showIf)) { clearTimeout(timer); timer = null; save(); draw(); }
+    });
   };
-  const go = async (i) => { if (timer) { clearTimeout(timer); timer = null; await save(); } cur = i; draw(); scrollTo(0, 0); };
+
+  const next = () => {
+    const s = SECTIONS[cur], miss = missingIn(s), bad = mixBadIn(s);
+    if ((miss.length || bad.length) && warned !== cur) {
+      warned = cur;
+      miss.forEach(q => { document.querySelector(`[data-field="${q.id}"]`)?.classList.add('bad'); const e = document.querySelector(`[data-err="${q.id}"]`); if (e) e.textContent = 'Câu này cần trả lời — ước tính là được.'; });
+      bad.forEach(q => { document.querySelector(`[data-field="${q.id}"]`)?.classList.add('bad'); const e = document.querySelector(`[data-err="${q.id}"]`); if (e) e.textContent = 'Tổng các tỷ lệ cần bằng 100% — bấm "Tự cân lại thành 100%".'; });
+      document.getElementById('steperr').textContent = `Còn ${miss.length + bad.length} câu chưa xong. Bấm "Tiếp tục" lần nữa nếu muốn điền sau.`;
+      document.querySelector('.field.bad')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    go(cur + 1);
+  };
+
+  const drawWelcome = () => {
+    app.innerHTML = `<section class="card welcome">
+      <h1>Khảo sát cơ sở pilot</h1>
+      <p>Giúp MayOS hiểu cơ sở của anh/chị để đề xuất cách hợp tác phù hợp.</p>
+      <ul class="facts"><li><b>~10 phút</b> · ${SECTIONS.length} bước ngắn</li><li><b>Ước tính là được</b> — không cần chứng từ</li><li><b>Tự động lưu</b> — có thể dừng và quay lại sau</li><li><b>Bảo mật</b> — chỉ anh/chị và MayOS xem được</li></ul>
+      <p class="note small">4 tuần đầu hợp tác, MayOS chỉ ghi nhận số liệu — không thay đổi cách vận hành và không thu phí. Phần cơ sở đang làm ra, anh/chị giữ trọn; MayOS chỉ được chia trên phần làm ra thêm.</p>
+      <button type="button" class="primary big" id="start">Bắt đầu →</button></section>`;
+    document.getElementById('start').onclick = () => go(0);
+  };
+
+  const drawReview = () => {
+    const rows = SECTIONS.map((s, i) => { const core = s.questions.filter(q => q.core && visible(q, a)); const done = core.filter(q => answered(q, a)).length; const miss = [...missingIn(s), ...mixBadIn(s)];
+      return `<li class="${miss.length ? 'todo' : 'ok'}"><div><b>${esc(s.title)}</b><span class="small muted"> · ${done}/${core.length} câu</span>
+        ${miss.length ? `<div class="small err">Cần bổ sung: ${miss.map(q => esc(q.label)).join('; ')}</div>` : ''}</div><button type="button" class="link" data-s="${i}">${miss.length ? 'Điền ngay' : 'Sửa'}</button></li>`; }).join('');
+    const blocking = SECTIONS.some(s => missingIn(s).length || mixBadIn(s).length);
+    app.innerHTML = `${stepHeader()}<section class="card step"><h1 class="steptitle">Xem lại & gửi</h1>
+      <p class="muted small">Kiểm tra nhanh trước khi gửi. Sau khi gửi, nội dung chỉ xem được; cần sửa thì liên hệ MayOS để mở lại.</p>
+      <ul class="review">${rows}</ul><p class="ferr" id="steperr"></p></section>
+      <nav class="bar noprint"><div class="in"><button type="button" id="prev" class="ghost">←</button><span id="st" class="saved"></span>
+        <button type="button" class="primary grow" id="submit" ${blocking ? 'aria-disabled="true"' : ''}>Gửi khảo sát</button></div></nav>`;
+    bindNav();
+    document.getElementById('prev').onclick = () => go(SECTIONS.length - 1);
+    document.getElementById('submit').onclick = submit;
+  };
+
+  const bindNav = () => app.querySelectorAll('[data-s]').forEach(b => b.onclick = () => go(+b.dataset.s));
+  const go = async (i) => { if (timer) { clearTimeout(timer); timer = null; await save(); } cur = Math.max(-1, Math.min(REVIEW, i)); draw(); scrollTo(0, 0); };
   const submit = async () => {
-    clearTimeout(timer); await save();
-    const missing = ALL_QUESTIONS.filter(q => q.required && visible(q, a) && !answered(q, a));
-    const mixBad = ALL_QUESTIONS.filter(q => q.type === 'mix' && answered(q, a) && Object.values(a[q.id]).reduce((s, x) => s + (+x || 0), 0) !== 100);
-    if (missing.length || mixBad.length) {
-      return alert('Vui lòng hoàn thành:\n' + [...missing.map(q => '• ' + q.label), ...mixBad.map(q => '• ' + q.label + ' (tổng phải bằng 100%)')].join('\n'));
-    }
-    if (!confirm('Gửi khảo sát? Sau khi gửi, nội dung chỉ xem được, không sửa được.')) return;
+    if (SECTIONS.some(s => missingIn(s).length || mixBadIn(s).length)) { document.getElementById('steperr').textContent = 'Còn câu bắt buộc chưa xong — bấm "Điền ngay" ở mục tương ứng.'; return; }
+    if (!confirm('Gửi khảo sát cho MayOS?')) return;
+    clearTimeout(timer); timer = null;
     const { error } = await sb.from('survey_responses').update({ answers: a, status: 'submitted' }).eq('user_id', me.user_id);
-    if (error) return alert('Không gửi được: ' + error.message);
-    renderPartner();
+    if (error) { document.getElementById('steperr').textContent = 'Không gửi được: ' + error.message; return; }
+    resp = { ...resp, status: 'submitted', submitted_at: new Date().toISOString() };
+    renderReadOnly(true);
   };
+  function renderReadOnly(justSent) {
+    app.innerHTML = `<section class="card welcome">${justSent ? '<div class="sent">✓</div>' : ''}<h1>${justSent ? 'Đã gửi — cảm ơn anh/chị!' : 'Khảo sát đã gửi'}</h1>
+      <p class="muted">${resp.submitted_at ? 'Gửi lúc ' + new Date(resp.submitted_at).toLocaleString('vi-VN') + '. ' : ''}MayOS sẽ liên hệ để hẹn buổi trao đổi. Cần sửa nội dung, anh/chị liên hệ MayOS để mở lại.</p>
+      <button type="button" class="noprint" onclick="print()">In / Lưu PDF</button></section>
+      <section class="card">${SECTIONS.map(s => { const qs = s.questions.filter(q => visible(q, a) && answered(q, a)); if (!qs.length) return '';
+        return `<h2>${esc(s.title)}</h2><div class="tbl"><table><tbody>${qs.map(q => `<tr><td style="width:45%">${esc(q.label)}</td><td>${answerText(q, a[q.id])}</td></tr>`).join('')}</tbody></table></div>`; }).join('')}</section>`;
+  }
   addEventListener('beforeunload', e => { if (timer || saving) { e.preventDefault(); } });
   draw();
 }

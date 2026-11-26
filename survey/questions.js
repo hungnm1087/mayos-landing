@@ -35,7 +35,7 @@ export const SECTIONS = [
   ]},
   { id: 'C', title: 'Quỹ phòng & giá', questions: [
     { id: 'c_rooms', label: 'Tổng số phòng/căn', type: 'number', required: true, core: true },
-    { id: 'c_adr', label: 'Giá bán trung bình mỗi đêm – khách ngắn hạn', type: 'money', core: true, hint: 'Giá thực thu sau giảm giá, ước tính cũng được' },
+    { id: 'c_adr', label: 'Giá bán trung bình mỗi đêm – khách ngắn hạn', type: 'money', unit: 'k', core: true, hint: 'Giá thực thu sau giảm giá, ước tính cũng được' },
     { id: 'c_monthly_rate', label: 'Giá thuê trung bình mỗi tháng – khách trung hạn', type: 'money', core: true, hint: 'Bỏ trống nếu không có khách trung hạn' },
     { id: 'g_occ', label: 'Công suất phòng trung bình năm', type: 'percent', required: true, core: true, hint: 'Ước tính: trung bình bao nhiêu % số phòng có khách mỗi đêm' },
     { id: 'c_types', label: 'Các hạng phòng (tên – diện tích – số lượng – sức chứa – giá)', type: 'textarea', hint: 'Mỗi hạng một dòng' },
